@@ -45,9 +45,6 @@ class Organizer:
     force: bool
 
     def __post_init__(self):
-        self.src = os.path.abspath(self.src)
-        self.dest = os.path.abspath(self.dest)
-
         if not os.path.exists(self.dest):
             os.makedirs(self.dest)
 
@@ -56,31 +53,26 @@ class Organizer:
         ex_pack_path = os.path.join(
             self.src, "meta", "expansion_pack_data.json")
 
-        try:
-            song_pack_file = open(song_pack_path, encoding="utf8")
-            ex_pack_file = open(ex_pack_path, encoding="utf8")
-        except OSError as err:
-            raise OSError((
-                f"Cannot open song_pack_data or "
-                f"expansion_pack_data in {self.src}."
-            )) from err
 
         try:
-            song_pack_data = json.load(song_pack_file)
-            ex_pack_data = json.load(ex_pack_file)
-            song_pack_file.close()
-            ex_pack_file.close()
+            with open(song_pack_path, encoding="utf8") as song_pack_file, \
+                open(ex_pack_path, encoding="utf8") as ex_pack_file:
+                song_pack_data = json.load(song_pack_file)
+                ex_pack_data = json.load(ex_pack_file)
+                song_pack_file.close()
+                ex_pack_file.close()
 
-            song_pack_data = self.format_keys(
-                song_pack_data["offline_song_pack_list"])
-            ex_pack_data = self.format_keys(ex_pack_data["ExpansionPackList"])
-            self.__get_songs(song_pack_data, ex_pack_data)
+                song_pack_data = self.format_keys(
+                    song_pack_data["offline_song_pack_list"])
+                ex_pack_data = self.format_keys(
+                    ex_pack_data["ExpansionPackList"])
+                self.__get_songs(song_pack_data, ex_pack_data)
         except Exception as err:
             raise Exception((
-                "Something went wrong while reading song_pack_data and "
-                "expansion_pack_data. Check your files if there is something "
-                "wrong."
-            )) from err
+                f"There's something wrong with {song_pack_path} and "
+                f"{ex_pack_path}. Check those files to make sure they exist and "
+                f"they are valid JSON files."
+            ))
 
         self.num_of_charts = {
             "success": 0,
@@ -137,25 +129,26 @@ class Organizer:
         should_write_level_json = False
 
         if not self.force:
-            try: 
-                level_json_file = open(level_json_path, encoding="utf8")
-                level_json = json.load(level_json_file)
-                level_json_file.close()
+            try:
+                with open(level_json_path, encoding="utf8") as level_json_file:
+                    level_json = json.load(level_json_file)
 
-                if self.__chart_files_in_folder(level_json):
-                    self.num_of_charts["exist"] += 1
-                    return True
-                else:
-                    raise OSError(
-                        "One of the paths in the level.json is invalid")
+                    if self.__chart_files_in_folder(level_json):
+                        self.num_of_charts["exist"] += 1
+                        return True
+                    else:
+                        raise OSError(
+                            "One of the paths in the level.json is invalid")
             except (OSError, json.JSONDecodeError):
                 should_write_level_json = True
         
         if should_write_level_json or self.force:
             level_json = self.__create_level_json(song_info, chart_id)
-            level_json_file = open(level_json_path, "w", encoding="utf8")
-            json.dump(level_json, level_json_file, indent=4)
-            level_json_file.close()
+
+            with open(level_json, encoding="utf8") as level_json_file:
+                level_json_file = open(level_json_path, "w", encoding="utf8")
+                json.dump(level_json, level_json_file, indent=4)
+                level_json_file.close()
 
         try:
             self.__copy_chart_files(song_info["song_id"], level_json)
