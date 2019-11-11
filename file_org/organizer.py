@@ -68,6 +68,9 @@ class Organizer:
         try:
             song_pack_data = json.load(song_pack_file)
             ex_pack_data = json.load(ex_pack_file)
+            song_pack_file.close()
+            ex_pack_data.close()
+
             song_pack_data = self.format_keys(
                 song_pack_data["offline_song_pack_list"])
             ex_pack_data = self.format_keys(ex_pack_data["ExpansionPackList"])
@@ -135,7 +138,10 @@ class Organizer:
 
         if not self.force:
             try: 
-                level_json = json.load(open(level_json_path, encoding="utf8"))
+                level_json_file = open(level_json_path, encoding="utf8")
+                level_json = json.load(level_json_file)
+                level_json_file.close()
+
                 if self.__chart_files_in_folder(level_json):
                     self.num_of_charts["exist"] += 1
                     return True
@@ -149,6 +155,7 @@ class Organizer:
             level_json = self.__create_level_json(song_info, chart_id)
             level_json_file = open(level_json_path, "w", encoding="utf8")
             json.dump(level_json, level_json_file, indent=4)
+            level_json_file.close()
 
         try:
             self.__copy_chart_files(song_info["song_id"], level_json)
