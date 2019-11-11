@@ -42,6 +42,7 @@ TITLE_OVERRIDES = {
 class Organizer:
     src: str
     dest: str
+    force: bool
 
     def __post_init__(self):
         self.src = os.path.abspath(self.src)
@@ -130,12 +131,21 @@ class Organizer:
             os.makedirs(chart_folder)
 
         level_json_path = os.path.join(self.dest, chart_id, "level.json")
-        try: 
-            level_json = json.load(open(level_json_path, encoding="utf8"))
-            if self.__chart_files_in_folder(level_json):
-                self.num_of_charts["exist"] += 1
-                return True
-        except (OSError, json.JSONDecodeError):
+        should_write_level_json = False
+
+        if not self.force:
+            try: 
+                level_json = json.load(open(level_json_path, encoding="utf8"))
+                if self.__chart_files_in_folder(level_json):
+                    self.num_of_charts["exist"] += 1
+                    return True
+                else:
+                    raise OSError(
+                        "One of the paths in the level.json is invalid")
+            except (OSError, json.JSONDecodeError):
+                should_write_level_json = True
+        
+        if should_write_level_json or self.force:
             level_json = self.__create_level_json(song_info, chart_id)
             level_json_file = open(level_json_path, "w", encoding="utf8")
             json.dump(level_json, level_json_file, indent=4)
