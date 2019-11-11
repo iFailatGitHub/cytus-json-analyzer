@@ -1,10 +1,10 @@
 import click
+import os
 
 from file_org import Organizer
 from paths import CHART_PATH, MAIN_FILE_PATH, OUT_PATH
 
 path_type = click.Path(exists=True, file_okay=False, dir_okay=True)
-file_type = click.Path(file_okay=True, dir_okay=False)
 
 
 @click.group("cytus_analyzer")
@@ -18,7 +18,7 @@ def cli():
 @click.option("--dest", type=path_type, default=CHART_PATH,
               help="Folder where all files are grouped")
 @click.option("--force", is_flag=True,
-               help="Force overwrite any existing song folders")
+              help="Force overwrite any existing song folders")
 def org_files(src, dest, force):
     """
         Groups all files into folders based on the song.
@@ -32,8 +32,8 @@ def org_files(src, dest, force):
 
         label = f"Organizing {len(organizer.song_infos)} songs..."
         with click.progressbar(organizer.song_infos,
-                            label=label,
-                            item_show_func=get_id) as prog_bar:
+                               label=label,
+                               item_show_func=get_id) as prog_bar:
             for song_info in prog_bar:
                 organizer.organize(song_info)
 
@@ -48,20 +48,26 @@ def org_files(src, dest, force):
 
 
 @click.command("analyze")
-@click.argument("ids", type=click.STRING, nargs=-1)
-@click.option("--src", type=path_type, default=MAIN_FILE_PATH,
+@click.argument("chart_ids", type=click.STRING, nargs=-1)
+@click.option("--src", type=path_type, default=CHART_PATH,
               help="Folder all levels & charts")
-@click.option("--dest", type=file_type, default=OUT_PATH,
+@click.option("--dest", type=path_type, default=OUT_PATH,
               help="Folder where all statistics are written")
-def analyze(ids, src, dest):
+def analyze(chart_ids, src, dest):
     """
         Analyzes charts given a list of IDs. If you want to analyze all levels
-        in the source folder, don't input any IDs.
+        in src, don't input any IDs.
     """
-    pass
+    if len(chart_ids) == 0:
+        with os.scandir(src) as dir_items:
+            chart_ids = [chart_id.name for chart_id in dir_items
+                         if chart_id.is_dir()]
+
+    print(chart_ids)
+
 
 cli.add_command(org_files)
 cli.add_command(analyze)
 
 if __name__ == "__main__":
-    org_files() # pylint: disable=no-value-for-parameter
+    org_files()  # pylint: disable=no-value-for-parameter
