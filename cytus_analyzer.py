@@ -1,7 +1,7 @@
 import click
 
-from paths import MAIN_FILE_PATH, CHART_PATH, OUT_PATH
 from file_org import Organizer
+from paths import CHART_PATH, MAIN_FILE_PATH, OUT_PATH
 
 path_type = click.Path(exists=True, file_okay=False, dir_okay=True)
 file_type = click.Path(file_okay=True, dir_okay=False)
