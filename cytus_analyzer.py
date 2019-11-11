@@ -63,7 +63,8 @@ def analyze(chart_ids, src, dest):
             chart_ids = [chart_id.name for chart_id in dir_items
                          if chart_id.is_dir()]
 
-    print(chart_ids)
+    for chart_id in chart_ids:
+        pass
 
 
 cli.add_command(org_files)
