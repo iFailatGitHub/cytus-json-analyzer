@@ -53,7 +53,6 @@ class Organizer:
         ex_pack_path = os.path.join(
             self.src, "meta", "expansion_pack_data.json")
 
-
         try:
             with open(song_pack_path, encoding="utf8") as song_pack_file, \
                 open(ex_pack_path, encoding="utf8") as ex_pack_file:
@@ -138,7 +137,8 @@ class Organizer:
                         return True
                     else:
                         raise OSError(
-                            "One of the paths in the level.json is invalid")
+                            "One of the paths in the level.json is invalid"
+                        )
             except (OSError, json.JSONDecodeError):
                 should_write_level_json = True
         
@@ -153,10 +153,10 @@ class Organizer:
         try:
             self.__copy_chart_files(song_info["song_id"], level_json)
         except OSError as err:
-            raise OSError((
+            raise OSError(
                 f"Cannot find one of the required files for the song "
                 f"\"{level_json['title']}\". Aborting organization..."
-            )) from err
+            ) from err
 
         self.num_of_charts["success"] += 1
 
@@ -167,8 +167,8 @@ class Organizer:
         if title_id == song_info["song_name"]:
             title_id = PARENS_REGEX.sub("", title_id)
             title_id = FEAT_REGEX.sub("", title_id)
-            title_id = "".join(
-                [letter.lower() for letter in title_id if letter.isalnum()])
+            title_id = "".join([letter.lower() for letter in title_id
+                                if letter.isalnum()])
 
         char_id = song_info["song_pack"]
         if char_id == "NEKO#\u03a6\u03c9\u03a6":
