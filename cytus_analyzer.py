@@ -4,6 +4,7 @@ from paths import MAIN_FILE_PATH, CHART_PATH, OUT_PATH
 from file_org import Organizer
 
 path_type = click.Path(exists=True, file_okay=False, dir_okay=True)
+file_type = click.Path(file_okay=True, dir_okay=False)
 
 
 @click.group("cytus_analyzer")
@@ -16,7 +17,7 @@ def cli():
               help="Folder containing all songs, charts, meta, etc.")
 @click.option("--dest", type=path_type, default=CHART_PATH,
               help="Folder where all files are grouped")
-@click.option("--force", type=click.BOOL, default=False,
+@click.option("--force", is_flag=True,
                help="Force overwrite any existing song folders")
 def org_files(src, dest, force):
     """
@@ -50,7 +51,7 @@ def org_files(src, dest, force):
 @click.argument("ids", type=click.STRING, nargs=-1)
 @click.option("--src", type=path_type, default=MAIN_FILE_PATH,
               help="Folder all levels & charts")
-@click.option("--dest", type=path_type, default=OUT_PATH,
+@click.option("--dest", type=file_type, default=OUT_PATH,
               help="Folder where all statistics are written")
 def analyze(ids, src, dest):
     """
