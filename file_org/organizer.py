@@ -69,7 +69,7 @@ class Organizer:
             song_pack_data = json.load(song_pack_file)
             ex_pack_data = json.load(ex_pack_file)
             song_pack_file.close()
-            ex_pack_data.close()
+            ex_pack_file.close()
 
             song_pack_data = self.format_keys(
                 song_pack_data["offline_song_pack_list"])
