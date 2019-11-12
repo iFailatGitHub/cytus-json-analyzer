@@ -6,6 +6,7 @@ import time
 from dataclasses import InitVar, dataclass, field
 from typing import Dict, List
 
+from chart import LevelInfo
 from paths import get_level_file_paths
 
 FIRST_CAP_REGEX = re.compile(r'(.)([A-Z][a-z]+)')
@@ -55,7 +56,7 @@ class Organizer:
 
         try:
             with open(song_pack_path, encoding="utf8") as song_pack_file, \
-                open(ex_pack_path, encoding="utf8") as ex_pack_file:
+                    open(ex_pack_path, encoding="utf8") as ex_pack_file:
                 song_pack_data = json.load(song_pack_file)
                 ex_pack_data = json.load(ex_pack_file)
                 song_pack_file.close()
@@ -67,11 +68,11 @@ class Organizer:
                     ex_pack_data["ExpansionPackList"])
                 self.__get_songs(song_pack_data, ex_pack_data)
         except Exception as err:
-            raise Exception((
+            raise Exception(
                 f"There's something wrong with {song_pack_path} and "
                 f"{ex_pack_path}. Check those files to make sure they exist and "
                 f"they are valid JSON files."
-            ))
+            )
 
         self.num_of_charts = {
             "success": 0,
@@ -130,25 +131,23 @@ class Organizer:
         if not self.force:
             try:
                 with open(level_json_path, encoding="utf8") as level_json_file:
-                    level_json = json.load(level_json_file)
+                    level_info = LevelInfo.from_dict(json.load(level_json_file), self.dest) 
 
-                    if self.__chart_files_in_folder(level_json):
+                    if level_info.are_paths_valid():
                         self.num_of_charts["exist"] += 1
-                        return True
+                        return
                     else:
                         raise OSError(
                             "One of the paths in the level.json is invalid"
                         )
-            except (OSError, json.JSONDecodeError):
+            except Exception:
                 should_write_level_json = True
-        
+
         if should_write_level_json or self.force:
             level_json = self.__create_level_json(song_info, chart_id)
 
-            with open(level_json, encoding="utf8") as level_json_file:
-                level_json_file = open(level_json_path, "w", encoding="utf8")
+            with open(level_json_path, "w", encoding="utf8") as level_json_file:
                 json.dump(level_json, level_json_file, indent=4)
-                level_json_file.close()
 
         try:
             self.__copy_chart_files(song_info["song_id"], level_json)
@@ -202,28 +201,12 @@ class Organizer:
                 "level": song_chart_info["level"],
                 "path": f"chart.{diff}.txt"
             }
-            if diff == "chaos":
+            if diff == "chaos" or diff == "glitch":
                 chart_info["type"] = "extreme"
-            elif diff == "glitch":
-                chart_info["type"] = "extra"
 
             level_json["charts"].append(chart_info)
 
         return level_json
-
-    def __chart_files_in_folder(self, level_json) -> bool:
-        file_paths = get_level_file_paths(self.dest, level_json)
-
-        for item, path in file_paths.items():
-            if item == "charts":
-                file_exists = all([os.path.exists(cpath) for cpath in path])
-            else:
-                file_exists = os.path.exists(path)
-
-            if not file_exists:
-                return False
-
-        return True
 
     def __copy_chart_files(self, old_id: str, level_json: dict):
         file_paths = get_level_file_paths(self.dest, level_json)
