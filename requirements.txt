@@ -2,7 +2,7 @@ astroid==2.3.3
 autopep8==1.4.4
 Click==7.0
 colorama==0.4.1
--e git+https://github.com/iFailatGitHub/cytus-json-analyzer.git@a92a546b8c5e0ab0c48772e1df1bd3d02ca1fe64#egg=cytus_analyzer
+-e git+https://github.com/iFailatGitHub/cytus-json-analyzer.git@15be95fa9ae846b085868af252b6d283f650db38#egg=cytus_analyzer
 isort==4.3.21
 lazy-object-proxy==1.4.3
 mccabe==0.6.1

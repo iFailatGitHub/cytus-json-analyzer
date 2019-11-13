@@ -5,7 +5,7 @@ setup(
     version='0.1',
     py_modules=['cli'],
     install_requires=[
-        'Click',
+        'Click', 'mutagen'
     ],
     entry_points='''
         [console_scripts]
