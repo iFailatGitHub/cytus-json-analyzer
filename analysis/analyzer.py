@@ -1,7 +1,7 @@
 import json
 import os
 from enum import Enum
-from typing import Any, Dict, List, TypeVar
+from typing import Any, Dict, List, Tuple, TypeVar
 
 from mutagen.mp3 import MP3
 
@@ -17,14 +17,9 @@ class Analyzer:
 
         self.note_counts: Dict[NoteType, int] = make_dict(NoteType)
         self.speed_changes: Dict[EventType, int] = make_dict(EventType)
-        self.scanline_info: Dict[str, Dict[int]] = dict()
-
-        for stat in ["min", "mode", "max"]:
-            self.scanline_info[stat] = dict()
-            self.scanline_info[stat]["base_bpm"] = 0
-            self.scanline_info[stat]["ticks"] = 0
-            self.scanline_info[stat]["bpm"] = \
-                float('inf') if stat == "min" else -1
+        self.scanline_speeds = {
+            "min": (1, float('inf')), "mode": (0, 0), "max": (float('inf'), 1)
+        }
 
     def __open_files(self, folder: str, chart_id: str):
         level_json_path = os.path.join(folder, chart_id, "level.json")
