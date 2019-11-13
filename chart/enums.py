@@ -22,3 +22,4 @@ class EventArgs(Enum):
     R = "R"
     G = "G"
     W = "W"
+    NONE = "" # deep dive more like deep shit
