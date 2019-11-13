@@ -97,7 +97,7 @@ class LevelInfo:
         result["preview"] = to_class(PathWrapper, self.preview)
         result["background"] = to_class(PathWrapper, self.background)
         result["charts"] = from_list(
-            lambda x: to_class(LevelInfo, x), self.charts)
+            lambda x: to_class(ChartInfo, x), self.charts)
         return result
 
     def are_paths_valid(self) -> bool:

@@ -1,4 +1,5 @@
 import click
+import json
 import os
 from typing import List
 
@@ -65,12 +66,19 @@ def analyze(chart_ids:List[str]=[], src:str=CHART_PATH, dest:str=OUT_PATH):
             chart_ids = [chart_id.name for chart_id in dir_items
                          if chart_id.is_dir()]
 
+    stat_list = []
     with click.progressbar(chart_ids,
                            label=f"Analyzing {len(chart_ids)} charts...",
                            item_show_func=lambda x: x) as prog_bar:
         for chart_id in prog_bar:
             analyzer = Analyzer(src, chart_id)
             analyzer.start()
+            stats = analyzer.get_stats_as_json()
+            stat_list.append(stats)
+
+    dest = os.path.join(dest, "stats.json")
+    json.dump(stat_list, open(dest, "w", encoding="utf8"), indent=4)
+    click.echo(f"Analysis successful. Check stats in {dest}.")
 
 
 cli.add_command(org_files)

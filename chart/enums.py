@@ -15,8 +15,8 @@ class ScanLineDirection(Enum):
     UP = 1
 
 class EventType(Enum):
-    UP = 0
-    DOWN = 1
+    SPEED_UP = 0
+    SPEED_DOWN = 1
 
 class EventArgs(Enum):
     R = "R"
