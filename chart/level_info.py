@@ -1,29 +1,8 @@
 import os
 from dataclasses import InitVar, dataclass
-from typing import Any, List, TypeVar, Callable, Type, cast
+from typing import Any, List
 
-
-T = TypeVar("T")
-
-
-def from_str(x: Any) -> str:
-    assert isinstance(x, str)
-    return x
-
-
-def from_int(x: Any) -> int:
-    assert isinstance(x, int) and not isinstance(x, bool)
-    return x
-
-
-def from_list(f: Callable[[Any], T], x: Any) -> List[T]:
-    assert isinstance(x, list)
-    return [f(y) for y in x]
-
-
-def to_class(c: Type[T], x: Any) -> dict:
-    assert isinstance(x, c)
-    return cast(Any, x).to_dict()
+from chart.type_helper import from_int, from_list, from_str, to_class
 
 
 @dataclass
@@ -84,8 +63,9 @@ class LevelInfo:
         root_folder = os.path.join(folder, self.chart_id)
         self.paths = dict()
         for item in ["music", "preview", "background"]:
-            self.paths[item] = os.path.join(root_folder, getattr(self, item).path)
-        
+            self.paths[item] = os.path.join(
+                root_folder, getattr(self, item).path)
+
         chart_paths = []
         for chart in self.charts:
             chart_paths.append(os.path.join(root_folder, chart.path))
@@ -116,7 +96,8 @@ class LevelInfo:
         result["music"] = to_class(PathWrapper, self.music)
         result["preview"] = to_class(PathWrapper, self.preview)
         result["background"] = to_class(PathWrapper, self.background)
-        result["charts"] = from_list(lambda x: to_class(LevelInfo, x), self.charts)
+        result["charts"] = from_list(
+            lambda x: to_class(LevelInfo, x), self.charts)
         return result
 
     def are_paths_valid(self) -> bool:
