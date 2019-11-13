@@ -49,7 +49,7 @@ class Analyzer:
         except Exception as err:
             raise Exception(
                 f"There's something wrong with {chart_id}'s "
-                f"{self.chart_info['name']} chart."
+                f"{self.chart_info.name} chart."
             ) from err
         
     def start(self):
