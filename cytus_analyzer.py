@@ -88,4 +88,4 @@ cli.add_command(org_files)
 cli.add_command(analyze)
 
 if __name__ == "__main__":
-    analyze(["crystalpunk.deepdive"])
+    analyze()

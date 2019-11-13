@@ -13,15 +13,18 @@ EnumT = TypeVar("EnumT", bound=Enum)
 
 NOTE_CATEGORIES: Dict[str, List[NoteType]] = {
     category: [nt for nt in NoteType if category in nt.name]
-    for category in ["HOLD", "DRAG_HEAD", "DRAG_CHILD", "DRAG", "CDRAG"]
+    for category in ["hold", "drag_head", "drag_child", "drag", "cdrag"]
 }
 
-MINIMUM_GOOD_NOTES = [NoteType.TAP, *NOTE_CATEGORIES["HOLD"], NoteType.CDRAG_HEAD]
-MINIMIUM_GREAT_NOTES = [NoteType.FLICK]
+MINIMUM_GOOD_NOTES = [NoteType.tap, *NOTE_CATEGORIES["hold"], NoteType.cdrag_head]
+MINIMIUM_GREAT_NOTES = [NoteType.flick]
 
 def make_dict(enum: EnumT) -> Dict[EnumT, int]:
     return {item: 0 for item in enum}
 
+def truncate(num: float, decimals: int) -> float:
+    base = 10 ** decimals
+    return math.floor(num * base) / base
 
 class Analyzer:
     def __init__(self, folder: str, chart_id: str):
@@ -36,12 +39,12 @@ class Analyzer:
             "max_bpm": {"base_bpm": -1, "ticks": -1, "bpm": float("-inf")}
         }
         self.subtotals: Dict[str, int]= {
-            "HOLD": 0,
-            "DRAG_HEAD": 0,
-            "DRAG_CHILD": 0,
-            "CDRAG": 0,
-            "DRAG_ONLY": 0,
-            "DRAG": 0,
+            "hold": 0,
+            "drag_head": 0,
+            "drag_child": 0,
+            "cdrag": 0,
+            "drag_only": 0,
+            "drag": 0,
         }
         self.min_scores: Dict[str, float] = {
             "fc_score": 1000000,
@@ -92,27 +95,16 @@ class Analyzer:
         ret["meta"]["diff"] = self.chart_info.name
         ret["meta"]["level"] = self.chart_info.level
 
-        for stat_type, sl_stat in self.scan_line_stats.items():
-            ret[stat_type] = sl_stat
-
-        ret["note_counts"] = {
-            nt.name.lower(): count for nt, count in self.note_counts.items()
-        }
-        ret["subtotals"] = {
-            st.lower(): count for st, count in self.subtotals.items()
-        }
-        ret["note_rates"] = {
-            nt.name.lower(): rate for nt, rate in self.note_rates.items()
-        }
-        ret["subtotal_rates"] = {
-            st.lower(): count for st, count in self.subtotal_rates.items()
-        }
-        ret["speed_changes"]: {
-            et.name.lower(): count for et, count in self.speed_changes.items()
-        }
-
-        ret["subtotals"]["total"] = self.total_notes
-        ret.update({"min_scores": self.min_scores})
+        ret.update({
+            "scan_line_stats": self.scan_line_stats,
+            "speed_changes": self.__convert_enum_key(self.speed_changes), 
+            "note_counts": self.__convert_enum_key(self.note_counts),
+            "subtotals": self.subtotals,
+            "note_rates": self.__convert_enum_key(self.note_rates),
+            "subtotal_rates": self.subtotal_rates,
+            "avg_taps": {"taps": self.avg_taps, "rate": self.avg_tap_rate},
+            "min_scores": self.min_scores
+        })
         return ret
 
     def __get_scan_line_stats(self):
@@ -130,8 +122,8 @@ class Analyzer:
 
             if prev_speed is not None and speed != prev_speed:
                 speed_diff = speed["bpm"] - prev_speed["bpm"]
-                speed_change = EventType.SPEED_UP if speed_diff > 0 else \
-                    EventType.SPEED_DOWN
+                speed_change = EventType.speed_up if speed_diff > 0 else \
+                    EventType.speed_down
 
                 if speed_change != prev_speed_change:
                     self.speed_changes[speed_change] += 1
@@ -150,6 +142,10 @@ class Analyzer:
                     "bpm": self.__get_bpm(speed[0], speed[1])
                 }
                 mode_count = count
+
+        for stat in self.scan_line_stats:
+            self.scan_line_stats[stat]["base_bpm"] = truncate(
+                self.scan_line_stats[stat]["base_bpm"], 2)
 
     def __get_scan_line_speeds(self) -> List[Tuple[float]]:
         scan_line_speeds = []
@@ -189,24 +185,25 @@ class Analyzer:
         self.total_notes = sum(self.note_counts.values())
         self.note_rates = dict()
 
-        taps = 0
+        self.avg_taps = 0
         for nt, count in self.note_counts.items():
             for category in NOTE_CATEGORIES:
                 if nt in NOTE_CATEGORIES[category]:
                     self.subtotals[category] += count
 
-            if nt not in NOTE_CATEGORIES["DRAG_CHILD"] or \
-                nt is not NoteType.DRAG_HEAD:
-                taps += count
+            if nt not in NOTE_CATEGORIES["drag_child"] or \
+                nt is not NoteType.drag_head:
+                self.avg_taps += count
 
-            self.note_rates[nt] = count / self.total_notes
+            self.note_rates[nt] = truncate(count / self.total_notes, 4)
 
-        self.subtotals["DRAG_ONLY"] = self.subtotals["DRAG"] - \
-            self.subtotals["CDRAG"]
+        self.subtotals["drag_only"] = self.subtotals["drag"] - \
+            self.subtotals["cdrag"]
 
-        self.subtotal_rates = {st_key: count / self.total_notes 
+        self.subtotal_rates = {st_key: truncate(count / self.total_notes, 4)
                                for st_key, count in self.subtotals.items()}
-        self.avg_tap_rate = taps / self.total_notes
+        self.avg_tap_rate = self.avg_taps / self.total_notes
+        self.subtotals["grand_total"] = self.total_notes
 
     def __get_min_scores(self):
         goods = 0
@@ -223,10 +220,13 @@ class Analyzer:
 
         self.min_scores["fc_score"] = math.floor(9e5 / self.total_notes * (
             perfects + greats + 0.3 * goods) + 1e5)
-        self.min_scores["fc_tp"] = math.floor((perfects + 0.7 * greats
-            + 0.3 * goods) / self.total_notes * 10000) / 100
-        self.min_scores["mm_tp"] = math.floor((perfects + 0.7 * greats
-            + 0.7 * goods) / self.total_notes * 10000) / 100
+        self.min_scores["fc_tp"] = truncate((perfects + 0.7 * greats
+            + 0.3 * goods) / self.total_notes, 4)
+        self.min_scores["mm_tp"] = truncate((perfects + 0.7 * greats
+            + 0.7 * goods) / self.total_notes, 4)
 
     def __get_bpm(self, base_bpm: float, ticks: int) -> float:
         return round(base_bpm * 2 * self.chart.time_base / ticks, 2)
+
+    def __convert_enum_key(self, obj: Dict[Enum, Any]) -> Dict[str, Any]:
+        return {key.name: val for key, val in obj.items()}
