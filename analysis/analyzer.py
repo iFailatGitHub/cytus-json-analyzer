@@ -191,7 +191,7 @@ class Analyzer:
                 if nt in NOTE_CATEGORIES[category]:
                     self.subtotals[category] += count
 
-            if nt not in NOTE_CATEGORIES["drag_child"] or \
+            if nt not in NOTE_CATEGORIES["drag_child"] and \
                 nt is not NoteType.drag_head:
                 self.avg_taps += count
 
@@ -202,7 +202,7 @@ class Analyzer:
 
         self.subtotal_rates = {st_key: truncate(count / self.total_notes, 4)
                                for st_key, count in self.subtotals.items()}
-        self.avg_tap_rate = self.avg_taps / self.total_notes
+        self.avg_tap_rate = truncate(self.avg_taps / self.music_length, 2)
         self.subtotals["grand_total"] = self.total_notes
 
     def __get_min_scores(self):
