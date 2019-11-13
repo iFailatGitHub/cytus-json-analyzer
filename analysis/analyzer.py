@@ -95,8 +95,10 @@ class Analyzer:
         ret["meta"]["diff"] = self.chart_info.name
         ret["meta"]["level"] = self.chart_info.level
 
+        ret.update({stat_type: stat
+                    for stat_type, stat in self.scan_line_stats.items()})
+
         ret.update({
-            "scan_line_stats": self.scan_line_stats,
             "speed_changes": self.__convert_enum_key(self.speed_changes), 
             "note_counts": self.__convert_enum_key(self.note_counts),
             "subtotals": self.subtotals,
