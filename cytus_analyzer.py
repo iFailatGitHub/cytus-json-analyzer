@@ -47,7 +47,6 @@ def org_files(src:str=MAIN_FILE_PATH, dest:str=CHART_PATH, force:bool=False):
         )
     except OSError as err:
         click.echo(str(err))
-        return
 
 
 @click.command("analyze")
@@ -67,22 +66,26 @@ def analyze(chart_ids:List[str]=[], src:str=CHART_PATH, dest:str=OUT_PATH):
                          if chart_id.is_dir()]
 
     stat_list = []
-    with click.progressbar(chart_ids,
-                           label=f"Analyzing {len(chart_ids)} charts...",
-                           item_show_func=lambda x: x) as prog_bar:
-        for chart_id in prog_bar:
-            analyzer = Analyzer(src, chart_id)
-            analyzer.start()
-            stats = analyzer.get_stats_as_json()
-            stat_list.append(stats)
-
-    dest = os.path.join(dest, "stats.json")
-    json.dump(stat_list, open(dest, "w", encoding="utf8"), indent=4)
-    click.echo(f"Analysis successful. Check stats in {dest}.")
+    
+    try:
+        with click.progressbar(chart_ids,
+                            label=f"Analyzing {len(chart_ids)} charts...",
+                            item_show_func=lambda x: x) as prog_bar:
+            for chart_id in prog_bar:
+                analyzer = Analyzer(src, chart_id)
+                analyzer.start()
+                stats = analyzer.get_stats_as_json()
+                stat_list.append(stats)
+    except Exception as err:
+        click.echo(str(err))
+    else:
+        dest = os.path.join(dest, "stats.json")
+        json.dump(stat_list, open(dest, "w", encoding="utf8"), indent=4)
+        click.echo(f"Analysis successful. Check stats in {dest}.")
 
 
 cli.add_command(org_files)
 cli.add_command(analyze)
 
 if __name__ == "__main__":
-    analyze(["ivy.v"])
+    analyze(["crystalpunk.deepdive"])
