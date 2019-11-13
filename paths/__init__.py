@@ -1,1 +1,1 @@
-from .paths import MAIN_FILE_PATH, CHART_PATH, get_level_file_paths, OUT_PATH
+from .paths import MAIN_FILE_PATH, CHART_PATH, OUT_PATH

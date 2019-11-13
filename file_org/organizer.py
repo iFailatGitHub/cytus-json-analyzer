@@ -7,7 +7,6 @@ from dataclasses import InitVar, dataclass, field
 from typing import Dict, List
 
 from chart import LevelInfo
-from paths import get_level_file_paths
 
 FIRST_CAP_REGEX = re.compile(r'(.)([A-Z][a-z]+)')
 ALL_CAPS_REGEX = re.compile(r'([a-z0-9])([A-Z])')
@@ -126,7 +125,6 @@ class Organizer:
             os.makedirs(chart_folder)
 
         level_json_path = os.path.join(self.dest, chart_id, "level.json")
-        should_write_level_json = False
 
         if not self.force:
             try:
@@ -141,22 +139,20 @@ class Organizer:
                             "One of the paths in the level.json is invalid"
                         )
             except Exception:
-                should_write_level_json = True
+                pass
 
-        if should_write_level_json or self.force:
-            level_json = self.__create_level_json(song_info, chart_id)
-
-            with open(level_json_path, "w", encoding="utf8") as level_json_file:
-                json.dump(level_json, level_json_file, indent=4)
-
+        level_json = self.__create_level_json(song_info, chart_id)
+        level_info = LevelInfo.from_dict(level_json, self.dest)
         try:
-            self.__copy_chart_files(song_info["song_id"], level_json)
+            self.__copy_chart_files(song_info["song_id"], level_info)
         except OSError as err:
             raise OSError(
                 f"Cannot find one of the required files for the song "
                 f"\"{level_json['title']}\". Aborting organization..."
             ) from err
 
+        with open(level_json_path, "w", encoding="utf8") as level_json_file:
+            json.dump(level_json, level_json_file, indent=4)
         self.num_of_charts["success"] += 1
 
     def __create_chart_id(self, song_info: dict):
@@ -208,8 +204,8 @@ class Organizer:
 
         return level_json
 
-    def __copy_chart_files(self, old_id: str, level_json: dict):
-        file_paths = get_level_file_paths(self.dest, level_json)
+    def __copy_chart_files(self, old_id: str, level_json: LevelInfo):
+        file_paths = level_json.paths
         for item, path in file_paths.items():
             if item == "charts":
                 for idx, chart_path in enumerate(path):
