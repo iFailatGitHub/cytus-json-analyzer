@@ -81,7 +81,7 @@ def analyze(chart_ids:List[str]=[], src:str=CHART_PATH, dest:str=OUT_PATH):
     else:
         dest = os.path.join(dest, "stats.json")
         json.dump(stat_list, open(dest, "w", encoding="utf8"), indent=4)
-        click.echo(f"Analysis successful. Check stats in {dest}.")
+        click.echo(f"Analysis successful. Check stats in {os.path.abspath(dest)}.")
 
 
 cli.add_command(org_files)

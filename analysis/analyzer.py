@@ -11,18 +11,42 @@ from chart import Chart, EventType, LevelInfo, NoteType
 
 EnumT = TypeVar("EnumT", bound=Enum)
 
+NOTE_CATEGORIES: Dict[str, List[NoteType]] = {
+    category: [nt for nt in NoteType if category in nt.name]
+    for category in ["HOLD", "DRAG_HEAD", "DRAG_CHILD", "DRAG", "CDRAG"]
+}
+
+MINIMUM_GOOD_NOTES = [NoteType.TAP, *NOTE_CATEGORIES["HOLD"], NoteType.CDRAG_HEAD]
+MINIMIUM_GREAT_NOTES = [NoteType.FLICK]
+
 def make_dict(enum: EnumT) -> Dict[EnumT, int]:
     return {item: 0 for item in enum}
+
+
 class Analyzer:
     def __init__(self, folder: str, chart_id: str):
         self.__open_files(folder, chart_id)
 
         self.note_counts: Dict[NoteType, int] = make_dict(NoteType)
+        self.note_rates: Dict[NoteType, int] = make_dict(NoteType)
         self.speed_changes: Dict[EventType, int] = make_dict(EventType)
-        self.scan_line_stats: Dict[str, Tuple[float]] = {
-            "min_bpm" : {"base_bpm": -1, "ticks": -1, "bpm": float("inf")},
+        self.scan_line_stats: Dict[str, Dict[str, float]] = {
+            "min_bpm": {"base_bpm": -1, "ticks": -1, "bpm": float("inf")},
             "mode_bpm": {"base_bpm": -1, "ticks": -1, "bpm": -1},
-            "max_bpm" : {"base_bpm": -1, "ticks": -1, "bpm": float("-inf")}
+            "max_bpm": {"base_bpm": -1, "ticks": -1, "bpm": float("-inf")}
+        }
+        self.subtotals: Dict[str, int]= {
+            "HOLD": 0,
+            "DRAG_HEAD": 0,
+            "DRAG_CHILD": 0,
+            "CDRAG": 0,
+            "DRAG_ONLY": 0,
+            "DRAG": 0,
+        }
+        self.min_scores: Dict[str, float] = {
+            "fc_score": 1000000,
+            "fc_tp": 100.00,
+            "mm_tp": 100.00
         }
 
     def __open_files(self, folder: str, chart_id: str):
@@ -51,43 +75,46 @@ class Analyzer:
                 f"There's something wrong with {chart_id}'s "
                 f"{self.chart_info.name} chart."
             ) from err
-        
+
     def start(self):
-        self.music_length = MP3(self.level_info.paths["music"]).info.length
-        for note in self.chart.note_list:
-            self.note_counts[note.note_type] += 1
-
-        self.total_notes = sum(self.note_counts.values())
-        self.note_rates = {nt: self.note_counts[nt] / self.total_notes
-                           for nt in NoteType}
-
+        self.music_length = math.ceil(
+            MP3(self.level_info.paths["music"]).info.length)
         self.__get_scan_line_stats()
+        self.__get_note_counts()
+        self.__get_min_scores()
 
     def get_stats_as_json(self) -> dict:
         ret = dict()
-        ret["meta"] = self.level_info.to_dict().fromkeys([
-            "id", "title", "artist", "illustrator"
-        ])
+        meta = self.level_info.to_dict()
+        ret["meta"] = {key: meta[key] 
+                       for key in ("id", "title", "artist", "illustrator")}
         ret["meta"]["length"] = self.music_length
         ret["meta"]["diff"] = self.chart_info.name
         ret["meta"]["level"] = self.chart_info.level
 
-        for stat_type, sl_stat in self.scan_line_stats.items(): 
+        for stat_type, sl_stat in self.scan_line_stats.items():
             ret[stat_type] = sl_stat
 
         ret["note_counts"] = {
             nt.name.lower(): count for nt, count in self.note_counts.items()
         }
+        ret["subtotals"] = {
+            st.lower(): count for st, count in self.subtotals.items()
+        }
         ret["note_rates"] = {
             nt.name.lower(): rate for nt, rate in self.note_rates.items()
         }
+        ret["subtotal_rates"] = {
+            st.lower(): count for st, count in self.subtotal_rates.items()
+        }
         ret["speed_changes"]: {
-            et.name.lower: count for et, count in self.speed_changes.items()
+            et.name.lower(): count for et, count in self.speed_changes.items()
         }
 
-        ret["note_counts"]["total"] = self.total_notes
+        ret["subtotals"]["total"] = self.total_notes
+        ret.update({"min_scores": self.min_scores})
         return ret
-    
+
     def __get_scan_line_stats(self):
         scan_line_speeds = self.__get_scan_line_speeds()
         scan_line_counts = dict()
@@ -154,6 +181,52 @@ class Analyzer:
                 })
 
         return scan_line_speeds
+
+    def __get_note_counts(self):
+        for note in self.chart.note_list:
+            self.note_counts[note.note_type] += 1
+
+        self.total_notes = sum(self.note_counts.values())
+        self.note_rates = dict()
+
+        taps = 0
+        for nt, count in self.note_counts.items():
+            for category in NOTE_CATEGORIES:
+                if nt in NOTE_CATEGORIES[category]:
+                    self.subtotals[category] += count
+
+            if nt not in NOTE_CATEGORIES["DRAG_CHILD"] or \
+                nt is not NoteType.DRAG_HEAD:
+                taps += count
+
+            self.note_rates[nt] = count / self.total_notes
+
+        self.subtotals["DRAG_ONLY"] = self.subtotals["DRAG"] - \
+            self.subtotals["CDRAG"]
+
+        self.subtotal_rates = {st_key: count / self.total_notes 
+                               for st_key, count in self.subtotals.items()}
+        self.avg_tap_rate = taps / self.total_notes
+
+    def __get_min_scores(self):
+        goods = 0
+        greats = 0
+        perfects = 0
+
+        for nt, count in self.note_counts.items():
+            if nt in MINIMUM_GOOD_NOTES:
+                goods += count
+            elif nt in MINIMIUM_GREAT_NOTES:
+                greats += count
+            else:
+                perfects += count
+
+        self.min_scores["fc_score"] = math.floor(9e5 / self.total_notes * (
+            perfects + greats + 0.3 * goods) + 1e5)
+        self.min_scores["fc_tp"] = math.floor((perfects + 0.7 * greats
+            + 0.3 * goods) / self.total_notes * 10000) / 100
+        self.min_scores["mm_tp"] = math.floor((perfects + 0.7 * greats
+            + 0.7 * goods) / self.total_notes * 10000) / 100
 
     def __get_bpm(self, base_bpm: float, ticks: int) -> float:
         return round(base_bpm * 2 * self.chart.time_base / ticks, 2)
