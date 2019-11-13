@@ -1,6 +1,8 @@
 import click
 import os
+from typing import List
 
+from analysis import Analyzer
 from file_org import Organizer
 from paths import CHART_PATH, MAIN_FILE_PATH, OUT_PATH
 
@@ -19,7 +21,7 @@ def cli():
               help="Folder where all files are grouped")
 @click.option("--force", is_flag=True,
               help="Force overwrite any existing song folders")
-def org_files(src, dest, force):
+def org_files(src:str=MAIN_FILE_PATH, dest:str=CHART_PATH, force:bool=False):
     """
         Groups all files into folders based on the song.
     """
@@ -27,13 +29,13 @@ def org_files(src, dest, force):
     try:
         organizer = Organizer(src, dest, force)
 
-        def get_id(song: dict) -> str:
+        def get_name(song: dict) -> str:
             return "" if song is None else song["song_name"]
 
         label = f"Organizing {len(organizer.song_infos)} songs..."
         with click.progressbar(organizer.song_infos,
                                label=label,
-                               item_show_func=get_id) as prog_bar:
+                               item_show_func=get_name) as prog_bar:
             for song_info in prog_bar:
                 organizer.organize(song_info)
 
@@ -53,7 +55,7 @@ def org_files(src, dest, force):
               help="Folder all levels & charts")
 @click.option("--dest", type=path_type, default=OUT_PATH,
               help="Folder where all statistics are written")
-def analyze(chart_ids, src, dest):
+def analyze(chart_ids:List[str]=[], src:str=CHART_PATH, dest:str=OUT_PATH):
     """
         Analyzes charts given a list of IDs. If you want to analyze all levels
         in src, don't input any IDs.
@@ -63,12 +65,16 @@ def analyze(chart_ids, src, dest):
             chart_ids = [chart_id.name for chart_id in dir_items
                          if chart_id.is_dir()]
 
-    for chart_id in chart_ids:
-        pass
+    with click.progressbar(chart_ids,
+                           label=f"Analyzing {len(chart_ids)} charts...",
+                           item_show_func=lambda x: x) as prog_bar:
+        for chart_id in prog_bar:
+            analyzer = Analyzer(src, chart_id)
+            analyzer.start()
 
 
 cli.add_command(org_files)
 cli.add_command(analyze)
 
 if __name__ == "__main__":
-    org_files()  # pylint: disable=no-value-for-parameter
+    analyze(["ivy.v"])
