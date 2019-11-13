@@ -18,7 +18,9 @@ class Analyzer:
         self.note_counts: Dict[NoteType, int] = make_dict(NoteType)
         self.speed_changes: Dict[EventType, int] = make_dict(EventType)
         self.scanline_speeds = {
-            "min": (1, float('inf')), "mode": (0, 0), "max": (float('inf'), 1)
+            "min": (1, float('inf')),
+            "mode": (0, 0),
+            "max": (float('inf'), 1)
         }
 
     def __open_files(self, folder: str, chart_id: str):
