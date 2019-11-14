@@ -8,6 +8,8 @@ from file_org import Organizer
 from paths import CHART_PATH, MAIN_FILE_PATH, OUT_PATH
 
 path_type = click.Path(exists=True, file_okay=False, dir_okay=True)
+file_type = click.Path(file_okay=True, dir_okay=False)
+default_excel_path = os.path.join(OUT_PATH, "stats.json")
 
 
 @click.group("cytus_analyzer")
@@ -22,11 +24,14 @@ def cli():
               help="Folder where all files are grouped")
 @click.option("--force", is_flag=True,
               help="Force overwrite any existing song folders")
-def org_files(src:str=MAIN_FILE_PATH, dest:str=CHART_PATH, force:bool=False):
+def org_files(src: str = MAIN_FILE_PATH, dest: str = CHART_PATH, force: bool = False):
     """
         Groups all files into folders based on the song.
     """
     click.echo("Loading song metadata...")
+    src = os.path.abspath(src)
+    dest = os.path.abspath(dest)
+
     try:
         organizer = Organizer(src, dest, force)
 
@@ -53,9 +58,9 @@ def org_files(src:str=MAIN_FILE_PATH, dest:str=CHART_PATH, force:bool=False):
 @click.argument("chart_ids", type=click.STRING, nargs=-1)
 @click.option("--src", type=path_type, default=CHART_PATH,
               help="Folder all levels & charts")
-@click.option("--dest", type=path_type, default=OUT_PATH,
+@click.option("--dest", type=file_type, default=default_excel_path,
               help="Folder where all statistics are written")
-def analyze(chart_ids:List[str]=[], src:str=CHART_PATH, dest:str=OUT_PATH):
+def analyze(chart_ids: List[str] = [], src: str = CHART_PATH, dest: str = OUT_PATH):
     """
         Analyzes charts given a list of IDs. If you want to analyze all levels
         in src, don't input any IDs.
@@ -66,23 +71,29 @@ def analyze(chart_ids:List[str]=[], src:str=CHART_PATH, dest:str=OUT_PATH):
                          if chart_id.is_dir()]
 
     stat_list = []
-    
+    src = os.path.abspath(src)
+    dest = os.path.abspath(dest)
+
     try:
         with click.progressbar(chart_ids,
-                            label=f"Analyzing {len(chart_ids)} charts...",
-                            item_show_func=lambda x: x) as prog_bar:
+                               label=f"Analyzing {len(chart_ids)} charts...",
+                               item_show_func=lambda x: x) as prog_bar:
             for chart_id in prog_bar:
                 analyzer = Analyzer(src, chart_id)
                 analyzer.start()
                 stats = analyzer.get_stats_as_json()
                 stat_list.append(stats)
+
     except Exception as err:
         click.echo(str(err))
     else:
-        dest = os.path.join(dest, "stats.json")
-        json.dump(stat_list, open(dest, "w", encoding="utf8"), indent=4)
-        click.echo(f"Analysis successful. Check stats in {os.path.abspath(dest)}.")
+        dest_folder = os.path.dirname(dest)
+        if not os.path.exists(dest):
+            os.makedirs(dest_folder, exist_ok=True)
 
+        json.dump(stat_list, open(dest, "w", encoding="utf8"), indent=4)
+        click.echo(
+            f"Analysis successful. Check stats in {os.path.abspath(dest)}.")
 
 cli.add_command(org_files)
 cli.add_command(analyze)
