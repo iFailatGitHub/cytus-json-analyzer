@@ -106,9 +106,9 @@ class Analyzer:
             "subtotals": self.subtotals,
             "note_rates": self.__convert_enum_key(self.note_rates),
             "subtotal_rates": self.subtotal_rates,
-            "average_taps": {
-                "taps": self.avg_taps,
-                "taps_per_sec": self.avg_taps_per_sec
+            "notes_per_sec": {
+                "avg_taps": self.avg_taps_per_sec,
+                "all_notes": self.notes_per_sec
             },
             "min_scores": self.min_scores
         })
@@ -198,8 +198,7 @@ class Analyzer:
                 if nt in NOTE_CATEGORIES[category]:
                     self.subtotals[category] += count
 
-            if nt not in NOTE_CATEGORIES["drag_child"] and \
-                nt is not NoteType.drag_head:
+            if nt not in NOTE_CATEGORIES["drag_child"]:
                 self.avg_taps += count
 
             self.note_rates[nt] = truncate(count / self.total_notes, 4)
@@ -210,6 +209,9 @@ class Analyzer:
         self.subtotal_rates = {st_key: truncate(count / self.total_notes, 4)
                                for st_key, count in self.subtotals.items()}
         self.avg_taps_per_sec = truncate(self.avg_taps / self.music_length, 2)
+        self.notes_per_sec = truncate(self.total_notes / self.music_length, 2)
+
+        self.subtotals["avg_taps"] = self.avg_taps
         self.subtotals["total"] = self.total_notes
 
     def __get_min_scores(self):
