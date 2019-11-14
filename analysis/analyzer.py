@@ -108,7 +108,7 @@ class Analyzer:
             "subtotal_rates": self.subtotal_rates,
             "average_taps": {
                 "taps": self.avg_taps,
-                "taps_per_second": self.avg_tap_rate
+                "taps_per_sec": self.avg_taps_per_sec
             },
             "min_scores": self.min_scores
         })
@@ -209,7 +209,7 @@ class Analyzer:
 
         self.subtotal_rates = {st_key: truncate(count / self.total_notes, 4)
                                for st_key, count in self.subtotals.items()}
-        self.avg_tap_rate = truncate(self.avg_taps / self.music_length, 2)
+        self.avg_taps_per_sec = truncate(self.avg_taps / self.music_length, 2)
         self.subtotals["total"] = self.total_notes
 
     def __get_min_scores(self):

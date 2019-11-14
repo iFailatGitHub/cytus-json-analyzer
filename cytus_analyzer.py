@@ -106,10 +106,14 @@ def conv_nested_dict(obj: Dict[str, dict]) -> Dict[Tuple, Any]:
 
 def format_key(key: str) -> str:
     capitalize_words = ["Bpm", "Fc", "Mm", "Tp"]
+    dot_words = ["Min", "Max", "Sec"]
     key = key.replace("_", " ")
     key = key.title()
     for word in capitalize_words:
         key = key.replace(word, word.upper())
+
+    for word in dot_words:
+        key = key.replace(word, f"{word}.")
 
     key = key.replace("Cdrag", "C-Drag")
 
@@ -119,4 +123,4 @@ cli.add_command(org_files)
 cli.add_command(analyze)
 
 if __name__ == "__main__":
-    analyze(["nekoowo.rebirth"])
+    analyze([])
