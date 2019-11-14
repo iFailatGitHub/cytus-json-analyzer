@@ -82,9 +82,9 @@ def analyze(chart_ids: List[str] = [], src: str = CHART_PATH, dest: str = OUT_PA
             stat_list[chart_id] = stats
 
     click.echo(f"Done analyzing, now saving to {dest}...")
-    stat_list = {cid: conv_nested_dict(stat)
-                    for cid, stat in stat_list.items()}
     stat_df = pd.DataFrame.from_dict(stat_list, orient="index")
+    stat_df.rename(columns={key: format_key(key) for key in list(stat_df)},
+                   inplace=True)
     stat_df.index.name = "Chart ID"
 
     dest_folder = os.path.dirname(dest)
@@ -94,19 +94,9 @@ def analyze(chart_ids: List[str] = [], src: str = CHART_PATH, dest: str = OUT_PA
     stat_df.to_excel(dest)
     click.echo("Stats successfully saved.")
 
-def conv_nested_dict(obj: Dict[str, dict]) -> Dict[Tuple, Any]:
-    ret = dict()
-    for outer_key, inner_dict in obj.items():
-        outer_key = format_key(outer_key)
-        for inner_key, val in inner_dict.items():
-            inner_key = format_key(inner_key)
-            ret[(outer_key, inner_key)] = val
-
-    return ret
-
 def format_key(key: str) -> str:
     capitalize_words = ["Bpm", "Fc", "Mm", "Tp"]
-    dot_words = ["Min", "Max", "Sec"]
+    dot_words = ["Min", "Max", "Sec", "Avg"]
     key = key.replace("_", " ")
     key = key.title()
     for word in capitalize_words:
@@ -116,6 +106,7 @@ def format_key(key: str) -> str:
         key = key.replace(word, f"{word}.")
 
     key = key.replace("Cdrag", "C-Drag")
+    key = key.replace("Per", "per")
 
     return key
 

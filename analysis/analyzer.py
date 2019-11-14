@@ -1,6 +1,7 @@
 import json
 import math
 import os
+from collections import OrderedDict
 from enum import Enum
 from itertools import tee
 from typing import Any, Dict, List, Tuple, TypeVar
@@ -34,17 +35,17 @@ class Analyzer:
         self.note_rates: Dict[NoteType, int] = make_dict(NoteType)
         self.speed_changes: Dict[EventType, int] = make_dict(EventType)
         self.scan_line_stats: Dict[str, Dict[str, float]] = {
-            "min_bpm": {"base_bpm": -1, "ticks": -1, "bpm": float("inf")},
-            "mode_bpm": {"base_bpm": -1, "ticks": -1, "bpm": -1},
-            "max_bpm": {"base_bpm": -1, "ticks": -1, "bpm": float("-inf")}
+            "min": {"base": -1, "ticks": -1, "bpm": float("inf")},
+            "mode": {"base": -1, "ticks": -1, "bpm": -1},
+            "max": {"base": -1, "ticks": -1, "bpm": float("-inf")}
         }
-        self.subtotals: Dict[str, int]= {
+        self.subtotals: Dict[str, int] = {
             "hold": 0,
             "drag_head": 0,
             "drag_child": 0,
             "cdrag": 0,
-            "drag_only": 0,
             "drag": 0,
+            "total_drag": 0,
         }
         self.min_scores: Dict[str, float] = {
             "fc_score": 1000000,
@@ -87,31 +88,47 @@ class Analyzer:
         self.__get_min_scores()
 
     def get_stats_as_json(self) -> dict:
-        ret = dict()
+        append_total = ["hold", "drag_head", "drag_child"]
+        ret = OrderedDict()
         meta = self.level_info.to_dict()
-        ret["meta"] = {
+        ret = {
             key: meta[key] for key in 
             ("title", "artist", "illustrator", "charter")
         }
-        ret["meta"]["length"] = self.music_length
-        ret["meta"]["diff"] = self.chart_info.name
-        ret["meta"]["level"] = self.chart_info.level
+        ret["length"] = self.music_length
+        ret["diff"] = self.chart_info.name
+        ret["level"] = self.chart_info.level
 
-        ret.update({stat_type: stat
-                    for stat_type, stat in self.scan_line_stats.items()})
+        ret.update(self.__convert_enum_key(self.speed_changes))
+        ret.update({"speed_changes": sum(self.speed_changes.values())})
+
+        for stat_type, stats in self.scan_line_stats.items():
+            for key, val in stats.items():
+                ret_key = f"{stat_type}_bpm_{key}" if key != "bpm" else f"{stat_type}_bpm"
+                ret[ret_key] = val
+
+        for stat_type in ["notes", "rate"]:
+            note_stats = self.note_counts if stat_type == "notes" else self.note_rates
+            for key, val in note_stats.items():
+                ret[f"{key.name}_{stat_type}"] = val
+            
+            subtotal_stats = self.subtotals if stat_type == "notes" else self.subtotal_rates
+            for key, val in subtotal_stats.items():
+                ret_key = f"total_{key}_{stat_type}" if key in append_total else f"{key}_{stat_type}"
+                ret[ret_key] = val
+
+            if stat_type == "notes":
+                ret["avg_taps"] = self.avg_taps
+                ret["total_notes"] = self.total_notes
 
         ret.update({
-            "speed_changes": self.__convert_enum_key(self.speed_changes), 
-            "note_counts": self.__convert_enum_key(self.note_counts),
-            "subtotals": self.subtotals,
-            "note_rates": self.__convert_enum_key(self.note_rates),
-            "subtotal_rates": self.subtotal_rates,
-            "notes_per_sec": {
-                "avg_taps": self.avg_taps_per_sec,
-                "all_notes": self.notes_per_sec
-            },
-            "min_scores": self.min_scores
+            "avg_taps_per_sec": self.avg_taps_per_sec,
+            "notes_per_sec": self.notes_per_sec,
         })
+
+        for key, val in self.min_scores.items():
+            ret[f"min_{key}"] = val
+
         return ret
 
     def __get_scan_line_stats(self):
@@ -122,10 +139,10 @@ class Analyzer:
         prev_speed_change = None
 
         for speed in scan_line_speeds:
-            if speed["bpm"] > self.scan_line_stats["max_bpm"]["bpm"]:
-                self.scan_line_stats["max_bpm"] = speed
-            if speed["bpm"] < self.scan_line_stats["min_bpm"]["bpm"]:
-                self.scan_line_stats["min_bpm"] = speed
+            if speed["bpm"] > self.scan_line_stats["max"]["bpm"]:
+                self.scan_line_stats["max"] = speed
+            if speed["bpm"] < self.scan_line_stats["min"]["bpm"]:
+                self.scan_line_stats["min"] = speed
 
             if prev_speed is not None and speed != prev_speed:
                 speed_diff = speed["bpm"] - prev_speed["bpm"]
@@ -137,22 +154,22 @@ class Analyzer:
 
                 prev_speed_change = speed_change
 
-            key = (speed["base_bpm"], speed["ticks"])
+            key = (speed["bpm"], speed["ticks"])
             scan_line_counts[key] = scan_line_counts.setdefault(key, 0) + 1
             prev_speed = speed
 
         for speed, count in scan_line_counts.items():
             if count > mode_count:
-                self.scan_line_stats["mode_bpm"] = {
-                    "base_bpm": speed[0],
+                self.scan_line_stats["mode"] = {
+                    "base": speed[0],
                     "ticks": speed[1],
                     "bpm": self.__get_bpm(speed[0], speed[1])
                 }
                 mode_count = count
 
         for stat in self.scan_line_stats:
-            self.scan_line_stats[stat]["base_bpm"] = round(
-                self.scan_line_stats[stat]["base_bpm"], 2)
+            self.scan_line_stats[stat]["base"] = round(
+                self.scan_line_stats[stat]["base"], 2)
 
     def __get_scan_line_speeds(self) -> List[Tuple[float]]:
         scan_line_speeds = []
@@ -169,7 +186,7 @@ class Analyzer:
                 next_tempo = next(next_tempo_it, None)
                 bpm = self.__get_bpm(tempo.bpm, page.ticks)
                 scan_line_speeds.append({
-                    "base_bpm": tempo.bpm,
+                    "base": tempo.bpm,
                     "ticks": page.ticks,
                     "bpm": bpm
                 })
@@ -178,7 +195,7 @@ class Analyzer:
             if not page_added:
                 bpm = self.__get_bpm(tempo.bpm, page.ticks)
                 scan_line_speeds.append({
-                    "base_bpm": tempo.bpm,
+                    "base": tempo.bpm,
                     "ticks": page.ticks,
                     "bpm": bpm
                 })
@@ -203,16 +220,14 @@ class Analyzer:
 
             self.note_rates[nt] = truncate(count / self.total_notes, 4)
 
-        self.subtotals["drag_only"] = self.subtotals["drag"] - \
+        self.subtotals["total_drag"] = self.subtotals["drag"]
+        self.subtotals["drag"] = self.subtotals["total_drag"] - \
             self.subtotals["cdrag"]
 
         self.subtotal_rates = {st_key: truncate(count / self.total_notes, 4)
                                for st_key, count in self.subtotals.items()}
         self.avg_taps_per_sec = truncate(self.avg_taps / self.music_length, 2)
         self.notes_per_sec = truncate(self.total_notes / self.music_length, 2)
-
-        self.subtotals["avg_taps"] = self.avg_taps
-        self.subtotals["total"] = self.total_notes
 
     def __get_min_scores(self):
         goods = 0
