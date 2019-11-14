@@ -151,7 +151,7 @@ class Analyzer:
                 mode_count = count
 
         for stat in self.scan_line_stats:
-            self.scan_line_stats[stat]["base_bpm"] = truncate(
+            self.scan_line_stats[stat]["base_bpm"] = round(
                 self.scan_line_stats[stat]["base_bpm"], 2)
 
     def __get_scan_line_speeds(self) -> List[Tuple[float]]:
