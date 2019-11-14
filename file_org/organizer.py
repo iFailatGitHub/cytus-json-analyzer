@@ -183,7 +183,10 @@ class Organizer:
 
         level_json["title"] = song_info["song_name"]
         level_json["artist"] = song_info["artist"]
+        level_json["artist_source"] = "https://www.rayark.com/en/games/cytus2/"
         level_json["illustrator"] = "Rayark Inc."
+        level_json["illustrator_source"] = "https://www.rayark.com/en/games/cytus2/"
+        level_json["charter"] = song_info["song_pack"]
 
         level_json["music"] = {"path": "music.mp3"}
         level_json["preview"] = {"path": "preview.mp3"}
@@ -193,7 +196,7 @@ class Organizer:
         for diff, song_chart_info in song_info["charts"].items():
             chart_info = {
                 "type": diff,
-                "name": diff,
+                "name": diff.title(),
                 "level": song_chart_info["level"],
                 "path": f"chart.{diff}.txt"
             }

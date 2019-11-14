@@ -89,8 +89,10 @@ class Analyzer:
     def get_stats_as_json(self) -> dict:
         ret = dict()
         meta = self.level_info.to_dict()
-        ret["meta"] = {key: meta[key] 
-                       for key in ("id", "title", "artist", "illustrator")}
+        ret["meta"] = {
+            key: meta[key] for key in 
+            ("title", "artist", "illustrator", "charter")
+        }
         ret["meta"]["length"] = self.music_length
         ret["meta"]["diff"] = self.chart_info.name
         ret["meta"]["level"] = self.chart_info.level
@@ -205,7 +207,7 @@ class Analyzer:
         self.subtotal_rates = {st_key: truncate(count / self.total_notes, 4)
                                for st_key, count in self.subtotals.items()}
         self.avg_tap_rate = truncate(self.avg_taps / self.music_length, 2)
-        self.subtotals["grand_total"] = self.total_notes
+        self.subtotals["total"] = self.total_notes
 
     def __get_min_scores(self):
         goods = 0
