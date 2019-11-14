@@ -1,7 +1,8 @@
 import click
 import json
 import os
-from typing import List
+import pandas as pd
+from typing import Any, Dict, List, Tuple
 
 from analysis import Analyzer
 from file_org import Organizer
@@ -9,7 +10,7 @@ from paths import CHART_PATH, MAIN_FILE_PATH, OUT_PATH
 
 path_type = click.Path(exists=True, file_okay=False, dir_okay=True)
 file_type = click.Path(file_okay=True, dir_okay=False)
-default_excel_path = os.path.join(OUT_PATH, "stats.json")
+default_excel_path = os.path.join(OUT_PATH, "stats.xlsx")
 
 
 @click.group("cytus_analyzer")
@@ -32,26 +33,23 @@ def org_files(src: str = MAIN_FILE_PATH, dest: str = CHART_PATH, force: bool = F
     src = os.path.abspath(src)
     dest = os.path.abspath(dest)
 
-    try:
-        organizer = Organizer(src, dest, force)
+    organizer = Organizer(src, dest, force)
 
-        def get_name(song: dict) -> str:
-            return "" if song is None else song["song_name"]
+    def get_name(song: dict) -> str:
+        return "" if song is None else song["song_name"]
 
-        label = f"Organizing {len(organizer.song_infos)} songs..."
-        with click.progressbar(organizer.song_infos,
-                               label=label,
-                               item_show_func=get_name) as prog_bar:
-            for song_info in prog_bar:
-                organizer.organize(song_info)
+    label = f"Organizing {len(organizer.song_infos)} songs..."
+    with click.progressbar(organizer.song_infos,
+                            label=label,
+                            item_show_func=get_name) as prog_bar:
+        for song_info in prog_bar:
+            organizer.organize(song_info)
 
-        click.echo(
-            f"{organizer.num_of_charts['success']} songs successfully organized\n"
-            f"{organizer.num_of_charts['fail']} songs failed to organize\n"
-            f"{organizer.num_of_charts['exist']} songs already organized"
-        )
-    except OSError as err:
-        click.echo(str(err))
+    click.echo(
+        f"{organizer.num_of_charts['success']} songs successfully organized\n"
+        f"{organizer.num_of_charts['fail']} songs failed to organize\n"
+        f"{organizer.num_of_charts['exist']} songs already organized"
+    )
 
 
 @click.command("analyze")
@@ -70,33 +68,55 @@ def analyze(chart_ids: List[str] = [], src: str = CHART_PATH, dest: str = OUT_PA
             chart_ids = [chart_id.name for chart_id in dir_items
                          if chart_id.is_dir()]
 
-    stat_list = []
+    stat_list = dict()
     src = os.path.abspath(src)
     dest = os.path.abspath(dest)
 
-    try:
-        with click.progressbar(chart_ids,
-                               label=f"Analyzing {len(chart_ids)} charts...",
-                               item_show_func=lambda x: x) as prog_bar:
-            for chart_id in prog_bar:
-                analyzer = Analyzer(src, chart_id)
-                analyzer.start()
-                stats = analyzer.get_stats_as_json()
-                stat_list.append(stats)
+    with click.progressbar(chart_ids,
+                            label=f"Analyzing {len(chart_ids)} charts...",
+                            item_show_func=lambda x: x) as prog_bar:
+        for chart_id in prog_bar:
+            analyzer = Analyzer(src, chart_id)
+            analyzer.start()
+            stats = analyzer.get_stats_as_json()
+            stat_list[chart_id] = stats
 
-    except Exception as err:
-        click.echo(str(err))
-    else:
-        dest_folder = os.path.dirname(dest)
-        if not os.path.exists(dest):
-            os.makedirs(dest_folder, exist_ok=True)
+    click.echo(f"Done analyzing, now saving to {dest}...")
+    stat_list = {cid: conv_nested_dict(stat)
+                    for cid, stat in stat_list.items()}
+    stat_df = pd.DataFrame.from_dict(stat_list, orient="index")
+    stat_df.index.name = "Chart ID"
 
-        json.dump(stat_list, open(dest, "w", encoding="utf8"), indent=4)
-        click.echo(
-            f"Analysis successful. Check stats in {os.path.abspath(dest)}.")
+    dest_folder = os.path.dirname(dest)
+    if not os.path.exists(dest):
+        os.makedirs(dest_folder, exist_ok=True)
+
+    stat_df.to_excel(dest)
+    click.echo("Stats successfully saved.")
+
+def conv_nested_dict(obj: Dict[str, dict]) -> Dict[Tuple, Any]:
+    ret = dict()
+    for outer_key, inner_dict in obj.items():
+        outer_key = format_key(outer_key)
+        for inner_key, val in inner_dict.items():
+            inner_key = format_key(inner_key)
+            ret[(outer_key, inner_key)] = val
+
+    return ret
+
+def format_key(key: str) -> str:
+    capitalize_words = ["Bpm", "Fc", "Mm", "Tp"]
+    key = key.replace("_", " ")
+    key = key.title()
+    for word in capitalize_words:
+        key = key.replace(word, word.upper())
+
+    key = key.replace("Cdrag", "C-Drag")
+
+    return key
 
 cli.add_command(org_files)
 cli.add_command(analyze)
 
 if __name__ == "__main__":
-    analyze()
+    analyze(["nekoowo.rebirth"])

@@ -106,7 +106,10 @@ class Analyzer:
             "subtotals": self.subtotals,
             "note_rates": self.__convert_enum_key(self.note_rates),
             "subtotal_rates": self.subtotal_rates,
-            "avg_taps": {"taps": self.avg_taps, "rate": self.avg_tap_rate},
+            "average_taps": {
+                "taps": self.avg_taps,
+                "taps_per_second": self.avg_tap_rate
+            },
             "min_scores": self.min_scores
         })
         return ret
