@@ -7,6 +7,7 @@ class ExcelWriter:
     writer: pd.ExcelWriter
     workbook: xw.Workbook
     sheet: xws.Worksheet
+    formats: dict()
 
     def __init__(self, df: pd.DataFrame, path: str):
         self.df = df
@@ -16,41 +17,60 @@ class ExcelWriter:
         self.workbook = self.writer.book
         self.sheet = self.writer.sheets["Chart Stats"]
 
-    def format_table(self):
-        format_decimal_word = ["per_sec", "base", "bpm", "length", "level"]
-        decimal_format = self.workbook.add_format({"num_format": "0.00"})
-        rate_format = self.workbook.add_format({"num_format": "#0.00%"})
-        score_format = self.workbook.add_format({"num_format": "#,###"})
+        self.formats = {
+            "decimal": {
+                "keywords": ["per_sec", "base", "bpm"],
+                "format": self.workbook.add_format({"num_format": "0.00"})
+            },
+            "rate": {
+                "keywords": ["rate", "tp"],
+                "format": self.workbook.add_format({"num_format": "0.00%"})
+            },
+            "score": {
+                "keywords": ["score"],
+                "format": self.workbook.add_format({"num_format": "#,###"})
+            }
+        }
 
+        for format_ in self.formats.values():
+            format_["format"].set_align("vcenter")
+
+        self.default_format = self.workbook.add_format({"align": "vcenter"})
+
+    def format_table(self):
         do_not_avg_cols = ["chart_id", "title", "artist",
                            "illustrator", "charter", "diff"]
-        col_formats = []
+        col_opts_list = []
         cols = self.df.columns.values.tolist()
         cols.insert(0, self.df.index.name)
 
         for idx, header in enumerate(cols):
-            col_header = dict()
-            col_header["header"] = self._format_header_name(header)
+            col_opts = dict()
+            col_opts["header"] = self._format_header_name(header)
+
+            if header == "chart_id":
+                col_opts["total_string"] = "Average"
+
             if header not in do_not_avg_cols:
-                col_header["total_function"] = "average"
-            elif header == "chart_id":
-                col_header["total_string"] = "Average"
+                col_opts["total_function"] = "average"
+                col_opts["format"] = self.formats["decimal"]["format"]
+            else:
+                col_opts["format"] = self.default_format
 
-            if any([header.endswith(word) for word in format_decimal_word]):
-                self.sheet.set_column(idx, idx, cell_format=decimal_format)
-            elif header.endswith("rate") or header.endswith("tp"):
-                self.sheet.set_column(idx, idx, cell_format=rate_format)
-            elif header.endswith("score"):
-                self.sheet.set_column(idx, idx, cell_format=score_format)
+            for format_ in self.formats.values():
+                if any([header.endswith(kw) for kw in format_["keywords"]]):
+                    self.sheet.set_column(idx, idx,
+                                          cell_format=format_["format"])
+                    col_opts["format"] = format_["format"]
 
-            col_formats.append(col_header)
+            col_opts_list.append(col_opts)
 
         table_opts = {
             "first_column": True,
             "style": "Table Style Medium 6",
             "name": "ChartStats",
             "total_row": True,
-            "columns": col_formats,
+            "columns": col_opts_list,
         }
         self.sheet.add_table(0, 0, len(self.df.index), len(cols) - 1, table_opts)
 
