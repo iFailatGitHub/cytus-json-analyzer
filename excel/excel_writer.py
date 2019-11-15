@@ -16,6 +16,7 @@ class ExcelWriter:
 
         self.workbook = self.writer.book
         self.sheet = self.writer.sheets["Chart Stats"]
+        self.sheet.freeze_panes(1, 1)
 
         self.formats = {
             "decimal": {
