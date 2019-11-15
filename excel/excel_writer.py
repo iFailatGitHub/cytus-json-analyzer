@@ -62,6 +62,9 @@ class ExcelWriter:
                     self.sheet.set_column(idx, idx,
                                           cell_format=format_["format"])
                     col_opts["format"] = format_["format"]
+                    break
+            else:
+                self.sheet.set_column(idx, idx, cell_format=self.default_format)
 
             col_opts_list.append(col_opts)
 
