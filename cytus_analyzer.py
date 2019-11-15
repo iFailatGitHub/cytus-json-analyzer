@@ -73,8 +73,8 @@ def analyze(chart_ids: List[str] = [], src: str = CHART_PATH, dest: str = OUT_PA
     dest = os.path.abspath(dest)
 
     with click.progressbar(chart_ids,
-                            label=f"Analyzing {len(chart_ids)} charts...",
-                            item_show_func=lambda x: x) as prog_bar:
+                           label=f"Analyzing {len(chart_ids)} charts...",
+                           item_show_func=lambda x: x) as prog_bar:
         for chart_id in prog_bar:
             analyzer = Analyzer(src, chart_id)
             analyzer.start()

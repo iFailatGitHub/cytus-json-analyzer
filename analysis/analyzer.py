@@ -83,9 +83,9 @@ class Analyzer:
     def start(self):
         self.music_length = math.ceil(
             MP3(self.level_info.paths["music"]).info.length)
-        self.__get_scan_line_stats()
-        self.__get_note_counts()
-        self.__get_min_scores()
+        self._get_scan_line_stats()
+        self._get_note_counts()
+        self._get_min_scores()
 
     def get_stats_as_json(self) -> dict:
         append_total = ["hold", "drag_head", "drag_child"]
@@ -99,7 +99,7 @@ class Analyzer:
         ret["diff"] = self.chart_info.name
         ret["level"] = self.chart_info.level
 
-        ret.update(self.__convert_enum_key(self.speed_changes))
+        ret.update(self._convert_enum_key(self.speed_changes))
         ret.update({"speed_changes": sum(self.speed_changes.values())})
 
         for stat_type, stats in self.scan_line_stats.items():
@@ -131,8 +131,8 @@ class Analyzer:
 
         return ret
 
-    def __get_scan_line_stats(self):
-        scan_line_speeds = self.__get_scan_line_speeds()
+    def _get_scan_line_stats(self):
+        scan_line_speeds = self._get_scan_line_speeds()
         scan_line_counts = dict()
         mode_count = 0
         prev_speed = scan_line_speeds[0]
@@ -163,7 +163,7 @@ class Analyzer:
                 self.scan_line_stats["mode"] = {
                     "base": speed[0],
                     "ticks": speed[1],
-                    "bpm": self.__get_bpm(speed[0], speed[1])
+                    "bpm": self._get_bpm(speed[0], speed[1])
                 }
                 mode_count = count
 
@@ -171,7 +171,7 @@ class Analyzer:
             self.scan_line_stats[stat]["base"] = round(
                 self.scan_line_stats[stat]["base"], 2)
 
-    def __get_scan_line_speeds(self) -> List[Tuple[float]]:
+    def _get_scan_line_speeds(self) -> List[Tuple[float]]:
         scan_line_speeds = []
         tempo_it, next_tempo_it = tee(iter(self.chart.tempo_list))
 
@@ -184,7 +184,7 @@ class Analyzer:
             while next_tempo is not None and page.in_page(next_tempo):
                 tempo = next(tempo_it)
                 next_tempo = next(next_tempo_it, None)
-                bpm = self.__get_bpm(tempo.bpm, page.ticks)
+                bpm = self._get_bpm(tempo.bpm, page.ticks)
                 scan_line_speeds.append({
                     "base": tempo.bpm,
                     "ticks": page.ticks,
@@ -193,7 +193,7 @@ class Analyzer:
                 page_added = True
 
             if not page_added:
-                bpm = self.__get_bpm(tempo.bpm, page.ticks)
+                bpm = self._get_bpm(tempo.bpm, page.ticks)
                 scan_line_speeds.append({
                     "base": tempo.bpm,
                     "ticks": page.ticks,
@@ -202,7 +202,7 @@ class Analyzer:
 
         return scan_line_speeds
 
-    def __get_note_counts(self):
+    def _get_note_counts(self):
         for note in self.chart.note_list:
             self.note_counts[note.note_type] += 1
 
@@ -229,7 +229,7 @@ class Analyzer:
         self.avg_taps_per_sec = truncate(self.avg_taps / self.music_length, 2)
         self.notes_per_sec = truncate(self.total_notes / self.music_length, 2)
 
-    def __get_min_scores(self):
+    def _get_min_scores(self):
         goods = 0
         greats = 0
         perfects = 0
@@ -249,8 +249,8 @@ class Analyzer:
         self.min_scores["mm_tp"] = truncate((perfects + 0.7 * greats
             + 0.7 * goods) / self.total_notes, 4)
 
-    def __get_bpm(self, base_bpm: float, ticks: int) -> float:
+    def _get_bpm(self, base_bpm: float, ticks: int) -> float:
         return round(base_bpm * 2 * self.chart.time_base / ticks, 2)
 
-    def __convert_enum_key(self, obj: Dict[Enum, Any]) -> Dict[str, Any]:
+    def _convert_enum_key(self, obj: Dict[Enum, Any]) -> Dict[str, Any]:
         return {key.name: val for key, val in obj.items()}

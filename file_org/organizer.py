@@ -65,7 +65,7 @@ class Organizer:
                     song_pack_data["offline_song_pack_list"])
                 ex_pack_data = self.format_keys(
                     ex_pack_data["ExpansionPackList"])
-                self.__get_songs(song_pack_data, ex_pack_data)
+                self._get_songs(song_pack_data, ex_pack_data)
         except Exception as err:
             raise Exception(
                 f"There's something wrong with {song_pack_path} and "
@@ -79,7 +79,7 @@ class Organizer:
             "exist": 0
         }
 
-    def __get_songs(self, song_pack_data, ex_pack_data):
+    def _get_songs(self, song_pack_data, ex_pack_data):
         self.song_infos: List[dict] = []
 
         for song_pack_info in song_pack_data:
@@ -119,7 +119,7 @@ class Organizer:
         return ret
 
     def organize(self, song_info: dict):
-        chart_id = self.__create_chart_id(song_info)
+        chart_id = self._create_chart_id(song_info)
         chart_folder = os.path.join(self.dest, chart_id)
         if not os.path.exists(chart_folder):
             os.makedirs(chart_folder)
@@ -141,10 +141,10 @@ class Organizer:
             except Exception:
                 pass
 
-        level_json = self.__create_level_json(song_info, chart_id)
+        level_json = self._create_level_json(song_info, chart_id)
         level_info = LevelInfo.from_dict(level_json, self.dest)
         try:
-            self.__copy_chart_files(song_info["song_id"], level_info)
+            self._copy_chart_files(song_info["song_id"], level_info)
         except OSError as err:
             raise OSError(
                 f"Cannot find one of the required files for the song "
@@ -155,7 +155,7 @@ class Organizer:
             json.dump(level_json, level_json_file, indent=4)
         self.num_of_charts["success"] += 1
 
-    def __create_chart_id(self, song_info: dict):
+    def _create_chart_id(self, song_info: dict):
         title_id = TITLE_OVERRIDES.get(
             song_info["song_id"], song_info["song_name"])
 
@@ -175,7 +175,7 @@ class Organizer:
 
         return f"{char_id}.{title_id}"
 
-    def __create_level_json(self, song_info: dict, chart_id: str) -> dict:
+    def _create_level_json(self, song_info: dict, chart_id: str) -> dict:
         level_json = dict()
 
         level_json["version"] = 1
@@ -207,7 +207,7 @@ class Organizer:
 
         return level_json
 
-    def __copy_chart_files(self, old_id: str, level_json: LevelInfo):
+    def _copy_chart_files(self, old_id: str, level_json: LevelInfo):
         file_paths = level_json.paths
         for item, path in file_paths.items():
             if item == "charts":
