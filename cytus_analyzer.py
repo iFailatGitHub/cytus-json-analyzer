@@ -5,6 +5,7 @@ import pandas as pd
 from typing import Any, Dict, List, Tuple
 
 from analysis import Analyzer
+from excel import ExcelWriter
 from file_org import Organizer
 from paths import CHART_PATH, MAIN_FILE_PATH, OUT_PATH
 
@@ -83,32 +84,17 @@ def analyze(chart_ids: List[str] = [], src: str = CHART_PATH, dest: str = OUT_PA
 
     click.echo(f"Done analyzing, now saving to {dest}...")
     stat_df = pd.DataFrame.from_dict(stat_list, orient="index")
-    stat_df.rename(columns={key: format_key(key) for key in list(stat_df)},
-                   inplace=True)
-    stat_df.index.name = "Chart ID"
+    stat_df.index.name = "chart_id"
+
+    excel_writer = ExcelWriter(stat_df, dest)
+    excel_writer.format_table()
+    excel_writer.close()
 
     dest_folder = os.path.dirname(dest)
-    if not os.path.exists(dest):
+    if not os.path.exists(dest_folder):
         os.makedirs(dest_folder, exist_ok=True)
 
-    stat_df.to_excel(dest)
     click.echo("Stats successfully saved.")
-
-def format_key(key: str) -> str:
-    capitalize_words = ["Bpm", "Fc", "Mm", "Tp"]
-    dot_words = ["Min", "Max", "Sec", "Avg"]
-    key = key.replace("_", " ")
-    key = key.title()
-    for word in capitalize_words:
-        key = key.replace(word, word.upper())
-
-    for word in dot_words:
-        key = key.replace(word, f"{word}.")
-
-    key = key.replace("Cdrag", "C-Drag")
-    key = key.replace("Per", "per")
-
-    return key
 
 cli.add_command(org_files)
 cli.add_command(analyze)
