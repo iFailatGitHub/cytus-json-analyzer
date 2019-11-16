@@ -20,11 +20,14 @@ def cli():
 
 
 @click.command("org_files")
-@click.option("--src", type=path_type, default=MAIN_FILE_PATH,
+@click.option("--src", "-s",
+              type=path_type, default=MAIN_FILE_PATH,
               help="Folder containing all songs, charts, meta, etc.")
-@click.option("--dest", type=path_type, default=CHART_PATH,
+@click.option("--dest", "-d",
+              type=path_type, default=CHART_PATH,
               help="Folder where all files are grouped")
-@click.option("--force", is_flag=True,
+@click.option("--force", "-f",
+              is_flag=True,
               help="Force overwrite any existing song folders")
 def org_files(src: str = MAIN_FILE_PATH, dest: str = CHART_PATH, force: bool = False):
     """
@@ -55,9 +58,11 @@ def org_files(src: str = MAIN_FILE_PATH, dest: str = CHART_PATH, force: bool = F
 
 @click.command("analyze")
 @click.argument("chart_ids", type=click.STRING, nargs=-1)
-@click.option("--src", type=path_type, default=CHART_PATH,
+@click.option("--src", "-s",
+              type=path_type, default=CHART_PATH,
               help="Folder all levels & charts")
-@click.option("--dest", type=file_type, default=default_excel_path,
+@click.option("--dest", "-d",
+              type=file_type, default=default_excel_path,
               help="Folder where all statistics are written")
 def analyze(chart_ids: List[str] = [], src: str = CHART_PATH, dest: str = OUT_PATH):
     """
