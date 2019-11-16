@@ -2,6 +2,8 @@ import pandas as pd
 import xlsxwriter as xw
 import xlsxwriter.worksheet as xws
 
+from .formats import FORMATS
+
 class ExcelWriter:
     df: pd.DataFrame
     writer: pd.ExcelWriter
@@ -18,22 +20,10 @@ class ExcelWriter:
         self.sheet = self.writer.sheets["Chart Stats"]
         self.sheet.freeze_panes(1, 1)
 
-        self.formats = {
-            "decimal": {
-                "keywords": ["per_sec", "base", "bpm"],
-                "format": self.workbook.add_format({"num_format": "0.00"})
-            },
-            "rate": {
-                "keywords": ["rate", "tp"],
-                "format": self.workbook.add_format({"num_format": "0.00%"})
-            },
-            "score": {
-                "keywords": ["score"],
-                "format": self.workbook.add_format({"num_format": "#,###"})
-            }
-        }
+        self.formats = FORMATS
 
         for format_ in self.formats.values():
+            format_["format"] = self.workbook.add_format(format_["format"])
             format_["format"].set_align("vcenter")
 
         self.default_format = self.workbook.add_format({"align": "vcenter"})
