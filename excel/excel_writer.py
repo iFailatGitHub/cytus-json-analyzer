@@ -4,6 +4,8 @@ import xlsxwriter.worksheet as xws
 
 from .formats import FORMATS
 
+NO_AVG_COLS = ["chart_id", "title", "artist", "illustrator", "charter", "diff"]
+
 class ExcelWriter:
     df: pd.DataFrame
     writer: pd.ExcelWriter
@@ -29,8 +31,6 @@ class ExcelWriter:
         self.default_format = self.workbook.add_format({"align": "vcenter"})
 
     def format_table(self):
-        do_not_avg_cols = ["chart_id", "title", "artist",
-                           "illustrator", "charter", "diff"]
         col_opts_list = []
         cols = self.df.columns.values.tolist()
         cols.insert(0, self.df.index.name)
@@ -42,7 +42,7 @@ class ExcelWriter:
             if header == "chart_id":
                 col_opts["total_string"] = "Average"
 
-            if header not in do_not_avg_cols:
+            if header not in NO_AVG_COLS:
                 col_opts["total_function"] = "average"
                 col_opts["format"] = self.formats["decimal"]["format"]
             else:

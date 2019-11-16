@@ -88,7 +88,7 @@ class Analyzer:
         self._get_min_scores()
 
     def get_stats_as_json(self) -> dict:
-        append_total = ["hold", "drag_head", "drag_child"]
+        append_total = ("hold", "drag_head", "drag_child")
         ret = OrderedDict()
         meta = self.level_info.to_dict()
         ret = {
@@ -108,7 +108,7 @@ class Analyzer:
                            else f"{stat_type}_bpm")
                 ret[ret_key] = val
 
-        for stat_type in ["notes", "rate"]:
+        for stat_type in ("notes", "rate"):
             note_stats = (self.note_counts if stat_type == "notes"
                           else self.note_rates)
             for key, val in note_stats.items():
