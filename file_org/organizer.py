@@ -7,36 +7,12 @@ from dataclasses import InitVar, dataclass, field
 from typing import Dict, List
 
 from chart import LevelInfo
+from .titles import TITLE_OVERRIDES
 
 FIRST_CAP_REGEX = re.compile(r'(.)([A-Z][a-z]+)')
 ALL_CAPS_REGEX = re.compile(r'([a-z0-9])([A-Z])')
 FEAT_REGEX = re.compile(r'(?i)feat(?:\.|\s).*')
 PARENS_REGEX = re.compile(r'\([^\(\)]*\)')
-
-
-TITLE_OVERRIDES = {
-    "neko001_005": "alternapt1",
-    "cherry002_005": "binary",
-    "miku001_007": "luckyorb",
-    "miku001_008": "musiclikemagic",
-    "miku001_009": "yuexijiang",
-    "miku001_014": "3r2luckyorb",
-    "paff002_007": "hyouryuu",
-    "paff002_009": "kiminokoe",
-    "robo002_001": "myosukeaccelerator",
-    "neko002_002": "icanavoidit",
-    "neko002_004": "yatdaamloengdaam",
-    "neko002_007": "lira",
-    "neko002_010": "reincrnation",
-    "neko001_016": "hundredseccatdreams",
-    "neko001_019": "threelittledevilsretreat",
-    "neko001_025": "blowmymindoverheat",
-    "neko001_028": "unnoticed",
-    "neko001_029": "aratfromsewer",
-    "robo001_023": "mnkaccelerator",
-    "neko001_035": "revelation"
-}
-
 
 @dataclass
 class Organizer:
