@@ -3,7 +3,7 @@ astroid==2.3.3
 autopep8==1.4.4
 Click==7.0
 colorama==0.4.1
--e git+https://github.com/iFailatGitHub/cytus-json-analyzer.git@19f511395d7a2b9a88b5cb06d87595a11f4eb274#egg=cytus_analyzer
+-e git+https://github.com/iFailatGitHub/cytus-json-analyzer.git@e8384d95a1c19004ff81a4d909258776c169fb96#egg=cytus_analyzer
 future==0.18.2
 isort==4.3.21
 lazy-object-proxy==1.4.3
@@ -15,8 +15,10 @@ pefile==2019.4.18
 pycodestyle==2.5.0
 PyInstaller==3.5
 pylint==2.4.3
+pypiwin32==223
 python-dateutil==2.8.1
 pytz==2019.3
+pywin32==227
 pywin32-ctypes==0.2.0
 rope==0.14.0
 six==1.13.0
