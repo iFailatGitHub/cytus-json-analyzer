@@ -1,6 +1,7 @@
 import click
 import json
 import os
+import sys
 import pandas as pd
 from typing import Any, Dict, List, Tuple
 
@@ -36,6 +37,9 @@ def org_files(src: str = MAIN_FILE_PATH, dest: str = CHART_PATH, force: bool = F
     click.echo("Loading song metadata...")
     src = os.path.abspath(src)
     dest = os.path.abspath(dest)
+
+    if not os.path.exists(dest):
+        os.makedirs(dest, exist_ok=True)
 
     organizer = Organizer(src, dest, force)
 
@@ -105,4 +109,5 @@ cli.add_command(org_files)
 cli.add_command(analyze)
 
 if __name__ == "__main__":
-    analyze([])
+    if getattr(sys, 'frozen', False):
+        cli(sys.argv[1:]) # pylint: disable=too-many-function-args

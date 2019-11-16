@@ -5,7 +5,7 @@ setup(
     version='0.1',
     py_modules=['cli'],
     install_requires=[
-        'Click', 'mutagen', 'pandas', 'xlrd'
+        'Click', 'mutagen', 'pandas', 'xlrd', 'XlsxWriter'
     ],
     entry_points='''
         [console_scripts]
