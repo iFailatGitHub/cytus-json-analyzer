@@ -1,5 +1,8 @@
-# Charts Folder
+# Song Chart Folder
 
-Cytoid/organized Cytus chart files go here, with each song in a separate
-folder with proper `level.json`s (click [this link](https://sites.google.com/site/cytoidcommunity/guides/charting/playing-it-on-cytoid)
-for more info). The Wiki can explain it better than I could ~~probably~~.
+Place the charts here. Make sure to include **all** difficulties, or else they
+will be skipped by the file organizer.
+
+If you have the charts, but they look like a garbled mess, that means the charts
+are still encrypted. Visit [this gist](https://gist.github.com/HoLLy-HaCKeR/84bda48aa565c6214d1803a49fd6f5b7)
+on how to decrypt Cytus 2 charts. Use `.txt` as the extension instead of `.json`.

@@ -1,7 +1,7 @@
 import os
 from typing import Optional
 
-MAIN_FILE_PATH = r'.\files\assets'
+MAIN_FILE_PATH = r'.\files'
 
-CHART_PATH = r'.\files\charts'
-OUT_PATH = r'.\files\out'
+CHART_PATH = r'.\charts'
+OUT_PATH = r'.\out'

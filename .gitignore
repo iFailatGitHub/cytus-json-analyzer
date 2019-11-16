@@ -138,6 +138,8 @@ dmypy.json
 
 # chart files, not sharing for obvious reasons
 files/**
+charts/**
+out/**
 
 !files/*
 !**/README.md
