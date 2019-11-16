@@ -104,17 +104,21 @@ class Analyzer:
 
         for stat_type, stats in self.scan_line_stats.items():
             for key, val in stats.items():
-                ret_key = f"{stat_type}_bpm_{key}" if key != "bpm" else f"{stat_type}_bpm"
+                ret_key = (f"{stat_type}_bpm_{key}" if key != "bpm" 
+                           else f"{stat_type}_bpm")
                 ret[ret_key] = val
 
         for stat_type in ["notes", "rate"]:
-            note_stats = self.note_counts if stat_type == "notes" else self.note_rates
+            note_stats = (self.note_counts if stat_type == "notes"
+                          else self.note_rates)
             for key, val in note_stats.items():
                 ret[f"{key.name}_{stat_type}"] = val
             
-            subtotal_stats = self.subtotals if stat_type == "notes" else self.subtotal_rates
+            subtotal_stats = (self.subtotals if stat_type == "notes"
+                              else self.subtotal_rates)
             for key, val in subtotal_stats.items():
-                ret_key = f"total_{key}_{stat_type}" if key in append_total else f"{key}_{stat_type}"
+                ret_key = f"{key}_{stat_type}"
+                ret_key = f"total_{ret_key}" if key in append_total else ret_key
                 ret[ret_key] = val
 
             if stat_type == "notes":
