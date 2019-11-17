@@ -16,7 +16,7 @@ class ExcelWriter:
     def __init__(self, df: pd.DataFrame, path: str):
         self.df = df
         self.writer = pd.ExcelWriter(path, engine="xlsxwriter") # pylint: disable=abstract-class-instantiated
-        df.to_excel(self.writer, sheet_name="Chart Stats", header=False)
+        df.to_excel(self.writer, sheet_name="Chart Stats", header=False, startrow=1)
 
         self.workbook = self.writer.book
         self.sheet = self.writer.sheets["Chart Stats"]
@@ -66,7 +66,8 @@ class ExcelWriter:
             "total_row": True,
             "columns": col_opts_list,
         }
-        self.sheet.add_table(0, 0, len(self.df.index), len(cols) - 1, table_opts)
+        self.sheet.add_table(0, 0, len(self.df.index) + 1, len(cols) - 1,
+                             table_opts)
 
     def close(self):
         self.writer.save()
