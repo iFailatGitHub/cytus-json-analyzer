@@ -7,7 +7,7 @@ from dataclasses import InitVar, dataclass, field
 from typing import Dict, List
 
 from chart import LevelInfo
-from .titles import TITLE_OVERRIDES
+from .titles import ID_OVERRIDES, LOCALIZED_TITLES
 
 FIRST_CAP_REGEX = re.compile(r'(.)([A-Z][a-z]+)')
 ALL_CAPS_REGEX = re.compile(r'([a-z0-9])([A-Z])')
@@ -132,7 +132,7 @@ class Organizer:
         self.num_of_charts["success"] += 1
 
     def _create_chart_id(self, song_info: dict):
-        title_id = TITLE_OVERRIDES.get(
+        title_id = ID_OVERRIDES.get(
             song_info["song_id"], song_info["song_name"])
 
         if title_id == song_info["song_name"]:
@@ -158,6 +158,8 @@ class Organizer:
         level_json["id"] = chart_id
 
         level_json["title"] = song_info["song_name"]
+        level_json["title_localized"] = LOCALIZED_TITLES.get(
+            song_info["song_id"], level_json["title"])
         level_json["artist"] = song_info["artist"]
         level_json["artist_source"] = "https://www.rayark.com/en/games/cytus2/"
         level_json["illustrator"] = "Rayark Inc."
