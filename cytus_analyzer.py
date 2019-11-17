@@ -38,8 +38,7 @@ def org_files(src: str = MAIN_FILE_PATH, dest: str = CHART_PATH, force: bool = F
     src = os.path.abspath(src)
     dest = os.path.abspath(dest)
 
-    if not os.path.exists(dest):
-        os.makedirs(dest, exist_ok=True)
+    os.makedirs(dest, exist_ok=True)
 
     organizer = Organizer(src, dest, force)
 
@@ -100,8 +99,7 @@ def analyze(chart_ids: List[str] = [], src: str = CHART_PATH, dest: str = OUT_PA
     excel_writer.close()
 
     dest_folder = os.path.dirname(dest)
-    if not os.path.exists(dest_folder):
-        os.makedirs(dest_folder, exist_ok=True)
+    os.makedirs(dest_folder, exist_ok=True)
 
     click.echo("Stats successfully saved.")
 
