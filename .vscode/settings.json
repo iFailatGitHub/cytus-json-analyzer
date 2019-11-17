@@ -1,6 +1,6 @@
 {
     "files.exclude": {
-        "files/**/*[.mp3,.png,.txt]": true
+        "files/**/*{.mp3,.txt,.png}": true
     },
     "python.pythonPath": "venv\\Scripts\\python.exe"
 }
