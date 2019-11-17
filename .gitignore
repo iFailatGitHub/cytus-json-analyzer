@@ -139,6 +139,7 @@ dmypy.json
 # chart files, not sharing for obvious reasons
 files/**
 charts/**
+cytoid_charts/**
 out/**
 
 !files/*
