@@ -107,3 +107,6 @@ cli.add_command(analyze)
 if __name__ == "__main__":
     if getattr(sys, 'frozen', False):
         cli(sys.argv[1:]) # pylint: disable=too-many-function-args
+    else:
+        analyze([])
+
