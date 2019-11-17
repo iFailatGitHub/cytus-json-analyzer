@@ -51,10 +51,8 @@ class Note:
     note_id: int
     tick: int
     x: float
-    has_sibling: bool
     hold_tick: int
     next_id: int
-    is_forward: bool
 
     @staticmethod
     def from_dict(obj: Any) -> 'Note':
@@ -64,11 +62,9 @@ class Note:
         note_id = from_int(obj.get("id"))
         tick = from_int(obj.get("tick"))
         x = from_float(obj.get("x"))
-        has_sibling = from_bool(obj.get("has_sibling"))
         hold_tick = from_int(obj.get("hold_tick"))
         next_id = from_int(obj.get("next_id"))
-        is_forward = from_bool(obj.get("is_forward"))
-        return Note(page_index, note_type, note_id, tick, x, has_sibling, hold_tick, next_id, is_forward)
+        return Note(page_index, note_type, note_id, tick, x, hold_tick, next_id)
 
     def to_dict(self) -> dict:
         result: dict = {}
@@ -77,10 +73,8 @@ class Note:
         result["id"] = from_int(self.note_id)
         result["tick"] = from_int(self.tick)
         result["x"] = to_float(self.x)
-        result["has_sibling"] = from_bool(self.has_sibling)
         result["hold_tick"] = from_int(self.hold_tick)
         result["next_id"] = from_int(self.next_id)
-        result["is_forward"] = from_bool(self.is_forward)
         return result
 
 
