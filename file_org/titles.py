@@ -32,6 +32,7 @@ ID_OVERRIDES = {
 }
 
 LOCALIZED_TITLES = {
+	"cherry002_005": "Binary",
     "miku001_007": "Lucky\u2606Orb",
     "miku001_008": "Music Like Magic!",
     "miku001_009": "Moon West River",
