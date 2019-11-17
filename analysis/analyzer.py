@@ -97,7 +97,7 @@ class Analyzer:
         }
         ret["length"] = self.music_length
         ret["diff"] = self.chart_info.name
-        ret["level"] = self.chart_info.level
+        ret["level"] = self.chart_info.difficulty
 
         ret.update(self._convert_enum_key(self.speed_changes))
         ret.update({"speed_changes": sum(self.speed_changes.values())})

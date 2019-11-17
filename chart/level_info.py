@@ -25,7 +25,7 @@ class PathWrapper:
 class ChartInfo:
     chart_type: str
     name: str
-    level: int
+    difficulty: int
     path: str
 
     @staticmethod
@@ -33,15 +33,15 @@ class ChartInfo:
         assert isinstance(obj, dict)
         chart_type = from_str(obj.get("type"))
         name = from_str(obj.get("name"))
-        level = int(from_str(obj.get("level")))
+        difficulty = from_int(obj.get("difficulty"))
         path = from_str(obj.get("path"))
-        return ChartInfo(chart_type, name, level, path)
+        return ChartInfo(chart_type, name, difficulty, path)
 
     def to_dict(self) -> dict:
         result: dict = {}
         result["type"] = from_str(self.chart_type)
         result["name"] = from_str(self.name)
-        result["level"] = from_str(str(self.level))
+        result["difficulty"] = from_str(str(self.difficulty))
         result["path"] = from_str(self.path)
         return result
 
@@ -57,7 +57,7 @@ class LevelInfo:
     illustrator_source: str
     charter: str
     music: PathWrapper
-    preview: PathWrapper
+    music_preview: PathWrapper
     background: PathWrapper
     charts: List[ChartInfo]
     folder: InitVar[str]
@@ -65,7 +65,7 @@ class LevelInfo:
     def __post_init__(self, folder: str) -> None:
         root_folder = os.path.join(folder, self.chart_id)
         self.paths = dict()
-        for item in ["music", "preview", "background"]:
+        for item in ["music", "music_preview", "background"]:
             self.paths[item] = os.path.join(
                 root_folder, getattr(self, item).path)
 
@@ -80,19 +80,19 @@ class LevelInfo:
         assert isinstance(obj, dict)
         version = from_int(obj.get("version"))
         chart_id = from_str(obj.get("id"))
-        title = from_str(obj.get("title"))
+        title = from_str(obj.get("title_localized", obj.get("title")))
         artist = from_str(obj.get("artist"))
         artist_source = from_str(obj.get("artist_source"))
         illustrator = from_str(obj.get("illustrator"))
         illustrator_source = from_str(obj.get("illustrator_source"))
         charter = from_str(obj.get("charter"))
         music = PathWrapper.from_dict(obj.get("music"))
-        preview = PathWrapper.from_dict(obj.get("preview"))
+        music_preview = PathWrapper.from_dict(obj.get("music_preview"))
         background = PathWrapper.from_dict(obj.get("background"))
         charts = from_list(ChartInfo.from_dict, obj.get("charts"))
         return LevelInfo(version, chart_id, title, artist, artist_source,
                          illustrator, illustrator_source, charter,
-                         music, preview, background, charts, folder)
+                         music, music_preview, background, charts, folder)
 
     def to_dict(self) -> dict:
         result: dict = {}
@@ -105,7 +105,7 @@ class LevelInfo:
         result["illustrator_source"] = from_str(self.illustrator_source)
         result["charter"] = from_str(self.charter)
         result["music"] = to_class(PathWrapper, self.music)
-        result["preview"] = to_class(PathWrapper, self.preview)
+        result["music_preview"] = to_class(PathWrapper, self.music_preview)
         result["background"] = to_class(PathWrapper, self.background)
         result["charts"] = from_list(
             lambda x: to_class(ChartInfo, x), self.charts)

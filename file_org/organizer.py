@@ -165,7 +165,7 @@ class Organizer:
         level_json["charter"] = song_info["song_pack"]
 
         level_json["music"] = {"path": "music.mp3"}
-        level_json["preview"] = {"path": "preview.mp3"}
+        level_json["music_preview"] = {"path": "preview.mp3"}
         level_json["background"] = {"path": "background.png"}
         level_json["charts"] = []
 
@@ -173,7 +173,7 @@ class Organizer:
             chart_info = {
                 "type": diff,
                 "name": diff.title(),
-                "level": song_chart_info["level"],
+                "difficulty": int(song_chart_info["level"]),
                 "path": f"chart.{diff}.txt"
             }
             if diff == "chaos" or diff == "glitch":
@@ -195,6 +195,6 @@ class Organizer:
             elif item == "background":
                 orig_path = os.path.join(self.src, item, f"{old_id}.png")
                 shutil.copy2(orig_path, path)
-            elif item == "music" or item == "preview":
+            elif item == "music" or item == "music_preview":
                 orig_path = os.path.join(self.src, item, f"{old_id}.mp3")
                 shutil.copy2(orig_path, path)
