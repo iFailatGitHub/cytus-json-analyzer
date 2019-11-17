@@ -34,17 +34,15 @@ def org_files(src: str = MAIN_FILE_PATH, dest: str = CHART_PATH, force: bool = F
     """
         Groups all files into folders based on the song.
     """
-    click.echo("Loading song metadata...")
-    src = os.path.abspath(src)
-    dest = os.path.abspath(dest)
-
-    os.makedirs(dest, exist_ok=True)
-
-    organizer = Organizer(src, dest, force)
-
     def get_name(song: dict) -> str:
         return "" if song is None else song["song_name"]
 
+    click.echo("Loading song metadata...")
+    src = os.path.abspath(src)
+    dest = os.path.abspath(dest)
+    os.makedirs(dest, exist_ok=True)
+
+    organizer = Organizer(src, dest, force)
     label = f"Organizing {len(organizer.song_infos)} songs..."
     with click.progressbar(organizer.song_infos,
                             label=label,
@@ -91,15 +89,15 @@ def analyze(chart_ids: List[str] = [], src: str = CHART_PATH, dest: str = OUT_PA
             stat_list[chart_id] = stats
 
     click.echo(f"Done analyzing, now saving to {dest}...")
+    dest_folder = os.path.dirname(dest)
+    os.makedirs(dest_folder, exist_ok=True)
+
     stat_df = pd.DataFrame.from_dict(stat_list, orient="index")
     stat_df.index.name = "chart_id"
 
     excel_writer = ExcelWriter(stat_df, dest)
     excel_writer.format_table()
     excel_writer.close()
-
-    dest_folder = os.path.dirname(dest)
-    os.makedirs(dest_folder, exist_ok=True)
 
     click.echo("Stats successfully saved.")
 
