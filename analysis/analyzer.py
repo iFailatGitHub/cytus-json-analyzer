@@ -7,6 +7,7 @@ from itertools import tee
 from typing import Any, Dict, List, Tuple, TypeVar
 
 from mutagen.mp3 import MP3
+from mutagen.oggvorbis import OggVorbis
 
 from chart import Chart, EventType, LevelInfo, NoteType
 
@@ -81,8 +82,12 @@ class Analyzer:
             ) from err
 
     def start(self):
-        self.music_length = math.ceil(
-            MP3(self.level_info.paths["music"]).info.length)
+        path, ext = os.path.splitext(self.level_info.paths["music"])
+        if ext == ".mp3":
+            music = MP3(self.level_info.paths["music"])
+        elif ext == ".ogg":
+            music = OggVorbis(self.level_info.paths["music"])
+        self.music_length = math.ceil(music.info.length)
         self._get_scan_line_stats()
         self._get_note_counts()
         self._get_min_scores()
