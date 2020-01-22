@@ -23,3 +23,4 @@ class EventArgs(Enum):
     G = "G"
     W = "W"
     NONE = "" # deep dive more like deep shit
+    WHAT = "???" # rayark i will kill you personally
