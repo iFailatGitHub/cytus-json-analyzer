@@ -94,8 +94,8 @@ class Organizer:
 
         return ret
 
-    def organize(self, song_info: dict):
-        chart_id = self._create_chart_id(song_info)
+    def organize(self, song_info: dict, is_glitch: bool = False):
+        chart_id = self._create_chart_id(song_info, is_glitch)
         chart_folder = os.path.join(self.dest, chart_id)
         if not os.path.exists(chart_folder):
             os.makedirs(chart_folder)
@@ -117,7 +117,7 @@ class Organizer:
             except Exception:
                 pass
 
-        level_json = self._create_level_json(song_info, chart_id)
+        level_json = self._create_level_json(song_info, chart_id, is_glitch)
         level_info = LevelInfo.from_dict(level_json, self.dest)
         try:
             self._copy_chart_files(song_info["song_id"], level_info)
@@ -131,7 +131,7 @@ class Organizer:
             json.dump(level_json, level_json_file, indent=4)
         self.num_of_charts["success"] += 1
 
-    def _create_chart_id(self, song_info: dict):
+    def _create_chart_id(self, song_info: dict, is_glitch: bool = False):
         title_id = ID_OVERRIDES.get(
             song_info["song_id"], song_info["song_name"])
 
@@ -149,9 +149,10 @@ class Organizer:
             char_id = char_id.replace("_", "")
             char_id = char_id.lower()
 
-        return f"{char_id}.{title_id}"
+        return (f"{char_id}.{title_id}.glitch" if is_glitch
+                else f"{char_id}.{title_id}")
 
-    def _create_level_json(self, song_info: dict, chart_id: str) -> dict:
+    def _create_level_json(self, song_info: dict, chart_id: str, is_glitch: bool) -> dict:
         level_json = dict()
 
         level_json["version"] = 1
@@ -172,6 +173,9 @@ class Organizer:
         level_json["charts"] = []
 
         for diff, song_chart_info in song_info["charts"].items():
+            if (diff == "glitch" and not is_glitch) or (diff != "glitch" and is_glitch):
+                continue
+
             chart_info = {
                 "type": diff,
                 "name": diff.title(),

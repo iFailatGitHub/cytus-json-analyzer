@@ -50,6 +50,9 @@ def org_files(src: str = MAIN_FILE_PATH, dest: str = CHART_PATH, force: bool = F
         for song_info in prog_bar:
             organizer.organize(song_info)
 
+            if "glitch" in song_info["charts"]:
+                organizer.organize(song_info, True)
+
     click.echo(
         f"{organizer.num_of_charts['success']} songs successfully organized\n"
         f"{organizer.num_of_charts['fail']} songs failed to organize\n"
