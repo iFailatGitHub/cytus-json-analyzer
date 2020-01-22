@@ -28,7 +28,12 @@ ID_OVERRIDES = {
 	"robo001_019": "breakthebarrier",
 	"robo001_023": "mnkaccelerator",
 	"robo001_030": "fadeintodarkness",
-	"robo002_001": "myosukeaccelerator"
+	"robo002_001": "myosukeaccelerator",
+	"rin001_003": "sandenghuo",
+	"rin001_004": "youkairoku",
+	"rin001_006": "susumekunoichi",
+	"rin001_007": "aya",
+	"rin001_008": "kessen",
 }
 
 LOCALIZED_TITLES = {
@@ -46,4 +51,9 @@ LOCALIZED_TITLES = {
 	"neko002_010": "Re:incRnaTiON ~Farewell to the World's Afterglow~",
     "paff002_007": "Drifting",
     "paff002_009": "The Wind's Voice",
+	"rin001_003": "Three Lights",
+	"rin001_004": "\"Youkai Record, Come to Me\"",
+	"rin001_006": "Susume\u2606Kunoichi",
+	"rin001_007": "Aya",
+	"rin001_008": "Decisive Battle"
 }
