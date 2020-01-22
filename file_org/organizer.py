@@ -120,7 +120,7 @@ class Organizer:
         level_json = self._create_level_json(song_info, chart_id, is_glitch)
         level_info = LevelInfo.from_dict(level_json, self.dest)
         try:
-            self._copy_chart_files(song_info["song_id"], level_info)
+            self._copy_chart_files(song_info["song_id"], level_info,is_glitch)
         except OSError as err:
             raise OSError(
                 f"Cannot find one of the required files for the song "
@@ -189,15 +189,22 @@ class Organizer:
 
         return level_json
 
-    def _copy_chart_files(self, old_id: str, level_json: LevelInfo):
+    def _copy_chart_files(self, old_id: str, level_json: LevelInfo, is_glitch: bool):
         file_paths = level_json.paths
         for item, path in file_paths.items():
             if item == "charts":
-                for idx, chart_path in enumerate(path):
-                    orig_chart_fname = f"{old_id}_{idx}.txt"
+                if is_glitch:
+                    chart_path = path[0]
+                    orig_chart_fname = f"{old_id}_3.txt"
                     orig_chart_path = os.path.join(
                         self.src, item, orig_chart_fname)
                     shutil.copy2(orig_chart_path, chart_path)
+                else:
+                    for idx, chart_path in enumerate(path):
+                        orig_chart_fname = f"{old_id}_{idx}.txt"
+                        orig_chart_path = os.path.join(
+                            self.src, item, orig_chart_fname)
+                        shutil.copy2(orig_chart_path, chart_path)
             elif item == "background":
                 orig_path = os.path.join(self.src, item, f"{old_id}.png")
                 shutil.copy2(orig_path, path)
