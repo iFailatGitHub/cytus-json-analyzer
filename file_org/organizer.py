@@ -13,6 +13,7 @@ FIRST_CAP_REGEX = re.compile(r'(.)([A-Z][a-z]+)')
 ALL_CAPS_REGEX = re.compile(r'([a-z0-9])([A-Z])')
 FEAT_REGEX = re.compile(r'(?i)feat(?:\.|\s).*')
 PARENS_REGEX = re.compile(r'\([^\(\)]*\)')
+CYTUS_DIFFS = ["Easy", "Hard", "Chaos", "Glitch"]
 
 @dataclass
 class Organizer:
@@ -120,7 +121,7 @@ class Organizer:
         level_json = self._create_level_json(song_info, chart_id, is_glitch)
         level_info = LevelInfo.from_dict(level_json, self.dest)
         try:
-            self._copy_chart_files(song_info["song_id"], level_info,is_glitch)
+            self._copy_chart_files(song_info["song_id"], level_info)
         except OSError as err:
             raise OSError(
                 f"Cannot find one of the required files for the song "
@@ -185,26 +186,27 @@ class Organizer:
             if diff == "chaos" or diff == "glitch":
                 chart_info["type"] = "extreme"
 
+            if song_chart_info["music_id"]:
+                chart_info["music_override"] = {
+                    "path": f"music.{diff}.mp3"
+                }
+
             level_json["charts"].append(chart_info)
 
         return level_json
 
-    def _copy_chart_files(self, old_id: str, level_json: LevelInfo, is_glitch: bool):
+    def _copy_chart_files(self, old_id: str, level_json: LevelInfo):
         file_paths = level_json.paths
         for item, path in file_paths.items():
-            if item == "charts":
-                if is_glitch:
-                    chart_path = path[0]
-                    orig_chart_fname = f"{old_id}_3.txt"
-                    orig_chart_path = os.path.join(
-                        self.src, item, orig_chart_fname)
-                    shutil.copy2(orig_chart_path, chart_path)
-                else:
-                    for idx, chart_path in enumerate(path):
-                        orig_chart_fname = f"{old_id}_{idx}.txt"
-                        orig_chart_path = os.path.join(
-                            self.src, item, orig_chart_fname)
-                        shutil.copy2(orig_chart_path, chart_path)
+            if item == "charts" or item == "overrides":
+                for diff, inner_path in path.items():
+                    diff_idx = CYTUS_DIFFS.index(diff)
+                    ext = "txt" if item == "charts" else "mp3"
+                    subfolder = item if item == "charts" else "music"
+                    orig_fname = f"{old_id}_{diff_idx}.{ext}"
+                    orig_path = os.path.join(
+                        self.src, subfolder, orig_fname)
+                    shutil.copy2(orig_path, inner_path)
             elif item == "background":
                 orig_path = os.path.join(self.src, item, f"{old_id}.png")
                 shutil.copy2(orig_path, path)

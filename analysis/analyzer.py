@@ -71,22 +71,29 @@ class Analyzer:
             ) from err
 
         self.chart_info = self.level_info.charts[-1]
+        level_paths = self.level_info.paths
+        diff = self.chart_info.name
         try:
-            with open(self.level_info.paths["charts"][-1], encoding="utf8") as \
-                    chart_path:
-                self.chart = Chart.from_dict(json.load(chart_path))
+            chart_path = level_paths["charts"][diff]
+            with open(chart_path, encoding="utf8") as chart_file:
+                self.chart = Chart.from_dict(json.load(chart_file))
         except Exception as err:
             raise Exception(
                 f"There's something wrong with {chart_id}'s "
                 f"{self.chart_info.name} chart."
             ) from err
 
+        if "overrides" in level_paths:
+            self.music_path = level_paths["overrides"][diff]
+        else:
+            self.music_path = level_paths["music"]
+
     def start(self):
-        path, ext = os.path.splitext(self.level_info.paths["music"])
+        _, ext = os.path.splitext(self.music_path)
         if ext == ".mp3":
-            music = MP3(self.level_info.paths["music"])
+            music = MP3(self.music_path)
         elif ext == ".ogg":
-            music = OggVorbis(self.level_info.paths["music"])
+            music = OggVorbis(self.music_path)
         self.music_length = math.ceil(music.info.length)
         self._get_scan_line_stats()
         self._get_note_counts()

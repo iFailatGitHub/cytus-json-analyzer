@@ -1,8 +1,9 @@
 import os
 from dataclasses import InitVar, dataclass
-from typing import Any, List
+from typing import Any, List, Optional
 
-from chart.type_helper import from_int, from_list, from_str, to_class
+from chart.type_helper import (from_int, from_list, from_none, from_str,
+                               from_union, to_class)
 
 
 @dataclass
@@ -10,7 +11,7 @@ class PathWrapper:
     path: str
 
     @staticmethod
-    def from_dict(obj: Any) -> 'Background':
+    def from_dict(obj: Any) -> 'PathWrapper':
         assert isinstance(obj, dict)
         path = from_str(obj.get("path"))
         return PathWrapper(path)
@@ -27,6 +28,7 @@ class ChartInfo:
     name: str
     difficulty: int
     path: str
+    music_override: Optional[PathWrapper]
 
     @staticmethod
     def from_dict(obj: Any) -> 'ChartInfo':
@@ -35,7 +37,9 @@ class ChartInfo:
         name = from_str(obj.get("name"))
         difficulty = from_int(obj.get("difficulty"))
         path = from_str(obj.get("path"))
-        return ChartInfo(chart_type, name, difficulty, path)
+        music_override = from_union([PathWrapper.from_dict, from_none], 
+                                    obj.get("music_override"))
+        return ChartInfo(chart_type, name, difficulty, path, music_override)
 
     def to_dict(self) -> dict:
         result: dict = {}
@@ -43,6 +47,8 @@ class ChartInfo:
         result["name"] = from_str(self.name)
         result["difficulty"] = from_str(str(self.difficulty))
         result["path"] = from_str(self.path)
+        result["music_override"] = from_union([lambda x: to_class(PathWrapper, x), from_none], 
+                                              self.music_override)
         return result
 
 
@@ -69,11 +75,19 @@ class LevelInfo:
             self.paths[item] = os.path.join(
                 root_folder, getattr(self, item).path)
 
-        chart_paths = []
+        chart_paths = {}
+        override_paths = {}
         for chart in self.charts:
-            chart_paths.append(os.path.join(root_folder, chart.path))
+            chart_path = os.path.join(root_folder, chart.path)
+            chart_paths[chart.name] = chart_path
+            override = chart.music_override
+            if override is not None:
+                override_path = os.path.join(root_folder, override.path)
+                override_paths[chart.name] = override_path
 
         self.paths["charts"] = chart_paths
+        if override_paths:
+            self.paths["overrides"] = override_paths
 
     @staticmethod
     def from_dict(obj: Any, folder: str) -> 'LevelInfo':
@@ -113,8 +127,8 @@ class LevelInfo:
 
     def are_paths_valid(self) -> bool:
         for item, path in self.paths.items():
-            if item == "charts":
-                file_exists = all([os.path.exists(cpath) for cpath in path])
+            if item == "charts" or item == "overrides":
+                file_exists = all([os.path.exists(cpath) for cpath in path.values()])
             else:
                 file_exists = os.path.exists(path)
 

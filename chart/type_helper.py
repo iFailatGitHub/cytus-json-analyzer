@@ -41,3 +41,15 @@ def to_float(x: Any) -> float:
 def from_str(x: Any) -> str:
     assert isinstance(x, str)
     return x
+
+def from_union(fs, x):
+    for f in fs:
+        try:
+            return f(x)
+        except:
+            pass
+    assert False
+
+def from_none(x: Any) -> Any:
+    assert x is None
+    return x
