@@ -38,6 +38,7 @@ ID_OVERRIDES = {
 	"rin001_007": "aya",
 	"rin001_008": "kessen",
 	"vanessa001_002": "syuten",
+	"vanessa001_006": "chaosandabyss",
 	"vanessa001_009": "chaosoffline",
 	"vanessa001_010": "voffline",
 	"vanessa001_011": "ii"
