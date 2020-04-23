@@ -52,6 +52,7 @@ class Organizer:
 
         self.num_of_charts = {
             "success": 0,
+            "success_glitch": 0,
             "fail": 0,
             "exist": 0
         }
@@ -130,7 +131,11 @@ class Organizer:
 
         with open(level_json_path, "w", encoding="utf8") as level_json_file:
             json.dump(level_json, level_json_file, indent=4)
-        self.num_of_charts["success"] += 1
+        
+        if is_glitch:
+            self.num_of_charts["success_glitch"] += 1
+        else:
+            self.num_of_charts["success"] += 1
 
     def _create_chart_id(self, song_info: dict, is_glitch: bool = False):
         title_id = ID_OVERRIDES.get(
@@ -157,6 +162,7 @@ class Organizer:
         level_json = dict()
 
         level_json["version"] = 1
+        level_json["schema_version"] = 2
         level_json["id"] = chart_id
 
         level_json["title"] = song_info["song_name"]

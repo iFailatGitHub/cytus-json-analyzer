@@ -54,9 +54,9 @@ def org_files(src: str = MAIN_FILE_PATH, dest: str = CHART_PATH, force: bool = F
                 organizer.organize(song_info, True)
 
     click.echo(
-        f"{organizer.num_of_charts['success']} songs successfully organized\n"
-        f"{organizer.num_of_charts['fail']} songs failed to organize\n"
-        f"{organizer.num_of_charts['exist']} songs already organized"
+        f"{organizer.num_of_charts['success']:03} Chaos Charts organized\n"
+        f"{organizer.num_of_charts['success_glitch']:03} Glitch Charts organized\n"
+        f"{organizer.num_of_charts['exist']:03} Charts already organized\n"
     )
 
 
@@ -111,5 +111,6 @@ if __name__ == "__main__":
     if getattr(sys, 'frozen', False):
         cli(sys.argv[1:]) # pylint: disable=too-many-function-args
     else:
+        org_files(["--force"])
         analyze([])
 

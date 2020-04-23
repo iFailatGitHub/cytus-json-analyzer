@@ -55,6 +55,7 @@ class ChartInfo:
 @dataclass
 class LevelInfo:
     version: int
+    schema_version: int
     chart_id: str
     title: str
     artist: str
@@ -93,6 +94,7 @@ class LevelInfo:
     def from_dict(obj: Any, folder: str) -> 'LevelInfo':
         assert isinstance(obj, dict)
         version = from_int(obj.get("version"))
+        schema_version = from_int(obj.get("schema_version"))
         chart_id = from_str(obj.get("id"))
         title = from_str(obj.get("title_localized", obj.get("title")))
         artist = from_str(obj.get("artist"))
@@ -104,13 +106,15 @@ class LevelInfo:
         music_preview = PathWrapper.from_dict(obj.get("music_preview"))
         background = PathWrapper.from_dict(obj.get("background"))
         charts = from_list(ChartInfo.from_dict, obj.get("charts"))
-        return LevelInfo(version, chart_id, title, artist, artist_source,
-                         illustrator, illustrator_source, charter,
-                         music, music_preview, background, charts, folder)
+        return LevelInfo(version, schema_version, chart_id, title, artist,
+                         artist_source, illustrator, illustrator_source,
+                         charter, music, music_preview, background, charts,
+                         folder)
 
     def to_dict(self) -> dict:
         result: dict = {}
         result["version"] = from_int(self.version)
+        result["schema_version"] = from_int(self.schema_version)
         result["id"] = from_str(self.chart_id)
         result["title"] = from_str(self.title)
         result["artist"] = from_str(self.artist)
