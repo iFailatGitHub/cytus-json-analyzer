@@ -13,7 +13,7 @@ class Event:
 
     @staticmethod
     def from_dict(obj: Any) -> 'Event':
-        assert isinstance(obj, dict)
+        assert isinstance(obj, dict), "Object is not a dict."
         evt_type = EventType(obj.get("type"))
         evt_args = EventArgs(obj.get("args"))
         return Event(evt_type, evt_args)
@@ -32,7 +32,7 @@ class EventOrder:
 
     @staticmethod
     def from_dict(obj: Any) -> 'EventOrder':
-        assert isinstance(obj, dict)
+        assert isinstance(obj, dict), "Object is not a dict."
         tick = from_int(obj.get("tick"))
         event_list = from_list(Event.from_dict, obj.get("event_list"))
         return EventOrder(tick, event_list)
@@ -56,7 +56,7 @@ class Note:
 
     @staticmethod
     def from_dict(obj: Any) -> 'Note':
-        assert isinstance(obj, dict)
+        assert isinstance(obj, dict), "Object is not a dict."
         page_index = from_int(obj.get("page_index"))
         note_type = NoteType(obj.get("type"))
         note_id = from_int(obj.get("id"))
@@ -88,7 +88,7 @@ class Tempo:
 
     @staticmethod
     def from_dict(obj: Any) -> 'Tempo':
-        assert isinstance(obj, dict)
+        assert isinstance(obj, dict), "Object is not a dict."
         tick = from_int(obj.get("tick"))
         value = from_int(obj.get("value"))
         return Tempo(tick, value)
@@ -111,7 +111,7 @@ class Page:
 
     @staticmethod
     def from_dict(obj: Any) -> 'Page':
-        assert isinstance(obj, dict)
+        assert isinstance(obj, dict), "Object is not a dict."
         start_tick = from_int(obj.get("start_tick"))
         end_tick = from_int(obj.get("end_tick"))
         scan_line_direction = ScanLineDirection(obj.get("scan_line_direction"))
@@ -141,7 +141,7 @@ class Chart:
 
     @staticmethod
     def from_dict(obj: Any) -> 'Chart':
-        assert isinstance(obj, dict)
+        assert isinstance(obj, dict), "Object is not a dict."
         format_version = from_int(obj.get("format_version"))
         time_base = from_int(obj.get("time_base"))
         start_offset_time = from_float(obj.get("start_offset_time"))

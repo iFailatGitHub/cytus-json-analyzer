@@ -5,8 +5,7 @@ T = TypeVar("T")
 EnumT = TypeVar("EnumT", bound=Enum)
 
 def from_int(x: Any) -> int:
-    assert isinstance(x, int) and not isinstance(x, bool), \
-        f"{x} is not an integer."
+    assert isinstance(x, int) and not isinstance(x, bool), f"{x} is not an integer."
     return x
 
 
@@ -41,7 +40,7 @@ def to_float(x: Any) -> float:
     return x
 
 def from_str(x: Any) -> str:
-    assert isinstance(x, str)
+    assert isinstance(x, str), f"{x} is not a string."
     return x
 
 def from_union(fs, x):

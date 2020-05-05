@@ -12,7 +12,7 @@ class PathWrapper:
 
     @staticmethod
     def from_dict(obj: Any) -> 'PathWrapper':
-        assert isinstance(obj, dict)
+        assert isinstance(obj, dict), "Object is not a dict."
         path = from_str(obj.get("path"))
         return PathWrapper(path)
 
@@ -32,7 +32,7 @@ class ChartInfo:
 
     @staticmethod
     def from_dict(obj: Any) -> 'ChartInfo':
-        assert isinstance(obj, dict)
+        assert isinstance(obj, dict), "Object is not a dict."
         chart_type = from_str(obj.get("type"))
         name = from_str(obj.get("name"))
         difficulty = from_int(obj.get("difficulty"))
@@ -93,7 +93,7 @@ class LevelInfo:
 
     @staticmethod
     def from_dict(obj: Any, folder: str) -> 'LevelInfo':
-        assert isinstance(obj, dict)
+        assert isinstance(obj, dict), "Object is not a dict."
         version = from_int(obj.get("version"))
         schema_version = from_int(obj.get("schema_version"))
         chart_id = from_str(obj.get("id"))
