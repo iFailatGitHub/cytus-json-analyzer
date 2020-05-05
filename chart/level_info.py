@@ -58,6 +58,7 @@ class LevelInfo:
     schema_version: int
     chart_id: str
     title: str
+    title_localized: str
     artist: str
     artist_source: str
     illustrator: str
@@ -96,7 +97,8 @@ class LevelInfo:
         version = from_int(obj.get("version"))
         schema_version = from_int(obj.get("schema_version"))
         chart_id = from_str(obj.get("id"))
-        title = from_str(obj.get("title_localized", obj.get("title")))
+        title = from_str(obj.get("title"))
+        title_localized = from_union([from_str, from_none], obj.get("title_localized"))
         artist = from_str(obj.get("artist"))
         artist_source = from_str(obj.get("artist_source"))
         illustrator = from_str(obj.get("illustrator"))
@@ -106,8 +108,8 @@ class LevelInfo:
         music_preview = PathWrapper.from_dict(obj.get("music_preview"))
         background = PathWrapper.from_dict(obj.get("background"))
         charts = from_list(ChartInfo.from_dict, obj.get("charts"))
-        return LevelInfo(version, schema_version, chart_id, title, artist,
-                         artist_source, illustrator, illustrator_source,
+        return LevelInfo(version, schema_version, chart_id, title, title_localized, 
+                         artist, artist_source, illustrator, illustrator_source,
                          charter, music, music_preview, background, charts,
                          folder)
 
@@ -117,6 +119,8 @@ class LevelInfo:
         result["schema_version"] = from_int(self.schema_version)
         result["id"] = from_str(self.chart_id)
         result["title"] = from_str(self.title)
+        result["title_localized"] = from_union([from_str, from_none], 
+                                               self.title_localized)
         result["artist"] = from_str(self.artist)
         result["artist_source"] = from_str(self.artist_source)
         result["illustrator"] = from_str(self.illustrator)

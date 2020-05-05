@@ -53,7 +53,7 @@ LOCALIZED_TITLES = {
     "neko001_019": "Three Little Devils' Retreat?!",
     "neko001_029": "A Rat from Sewer",
 	"neko001_038": "Hibike!",
-	"neko001_038": "Kirakuna Cloudy",
+	"neko001_039": "Kirakuna Cloudy",
     "neko001_035": "Re:VeLATiON ~Twin Wings of Light and Destruction~",
 	"neko002_002": "I can avoid it.#owo",
 	"neko002_004": "One Bite, Two Bites",
@@ -67,5 +67,6 @@ LOCALIZED_TITLES = {
 	"rin001_006": "Susume\u2606Kunoichi",
 	"rin001_007": "Aya",
 	"rin001_008": "Decisive Battle",
-	"vanessa001_011": "II"
+	"vanessa001_011": "II",
+	"xenon001_012": "Ultimate"
 }

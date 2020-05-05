@@ -5,14 +5,16 @@ import sys
 import pandas as pd
 from typing import Any, Dict, List, Tuple
 
-from analysis import Analyzer
+from analysis import Analyzer, NoteDistPlotter
 from excel import ExcelWriter
 from file_org import Organizer
 from paths import CHART_PATH, MAIN_FILE_PATH, OUT_PATH
 
 path_type = click.Path(exists=True, file_okay=False, dir_okay=True)
+opt_path_type = click.Path(exists=False, file_okay=False, dir_okay=True)
 file_type = click.Path(file_okay=True, dir_okay=False)
 default_excel_path = os.path.join(OUT_PATH, "stats.xlsx")
+default_dist_path = os.path.join(OUT_PATH, "note_dists")
 
 
 @click.group("cytus_analyzer")
@@ -45,8 +47,8 @@ def org_files(src: str = MAIN_FILE_PATH, dest: str = CHART_PATH, force: bool = F
     organizer = Organizer(src, dest, force)
     label = f"Organizing {len(organizer.song_infos)} songs..."
     with click.progressbar(organizer.song_infos,
-                            label=label,
-                            item_show_func=get_name) as prog_bar:
+                           label=label,
+                           item_show_func=get_name) as prog_bar:
         for song_info in prog_bar:
             organizer.organize(song_info)
 
@@ -68,7 +70,7 @@ def org_files(src: str = MAIN_FILE_PATH, dest: str = CHART_PATH, force: bool = F
 @click.option("--dest", "-d",
               type=file_type, default=default_excel_path,
               help="Folder where all statistics are written")
-def analyze(chart_ids: List[str] = [], src: str = CHART_PATH, dest: str = OUT_PATH):
+def analyze(chart_ids: List[str] = [], src: str = CHART_PATH, dest: str = default_excel_path):
     """
         Analyzes charts given a list of IDs. If you want to analyze all levels
         in src, don't input any IDs.
@@ -81,6 +83,7 @@ def analyze(chart_ids: List[str] = [], src: str = CHART_PATH, dest: str = OUT_PA
     stat_list = dict()
     src = os.path.abspath(src)
     dest = os.path.abspath(dest)
+    os.makedirs(os.path.dirname(dest), exist_ok=True)
 
     with click.progressbar(chart_ids,
                            label=f"Analyzing {len(chart_ids)} charts...",
@@ -104,13 +107,47 @@ def analyze(chart_ids: List[str] = [], src: str = CHART_PATH, dest: str = OUT_PA
 
     click.echo("Stats successfully saved.")
 
+
+@click.command("plot_dist")
+@click.argument("chart_ids", type=click.STRING, nargs=-1)
+@click.option("--src", "-s",
+              type=path_type, default=CHART_PATH,
+              help="Folder all levels & charts")
+@click.option("--dest", "-d",
+              type=opt_path_type, default=default_dist_path,
+              help="Folder where all note distributions are written")
+def plot_dist(chart_ids: List[str] = [], src: str = CHART_PATH, dest: str = default_dist_path):
+    """
+        Plots the note distribution of charts given a list of IDs.
+        If you want to analyze all levels in src, don't input any IDs.
+    """
+    if len(chart_ids) == 0:
+        with os.scandir(src) as dir_items:
+            chart_ids = [chart_id.name for chart_id in dir_items
+                            if chart_id.is_dir()]
+
+    stat_list = dict()
+    src = os.path.abspath(src)
+    dest = os.path.abspath(dest)
+    os.makedirs(dest, exist_ok=True)
+
+    with click.progressbar(chart_ids,
+                        label=f"Plotting {len(chart_ids)} note dists...",
+                        item_show_func=lambda x: x) as prog_bar:
+        for chart_id in prog_bar:
+            dist_plotter = NoteDistPlotter(src, chart_id)
+            dist_plotter.count_notes()
+            dist_plotter.plot_counts(os.path.join(dest, f"{chart_id}.png"))
+
+
 cli.add_command(org_files)
 cli.add_command(analyze)
+cli.add_command(plot_dist)
 
 if __name__ == "__main__":
     if getattr(sys, 'frozen', False):
-        cli(sys.argv[1:]) # pylint: disable=too-many-function-args
+        cli(sys.argv[1:])  # pylint: disable=too-many-function-args
     else:
         org_files(["--force"])
         analyze([])
-
+        plot_dist([])
