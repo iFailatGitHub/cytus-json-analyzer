@@ -117,7 +117,7 @@ class NoteDistPlotter:
         plt.rc('xtick', labelsize=12)
         plt.rc('ytick', labelsize=12)
 
-        fig, ax = plt.subplots(dpi=150)
+        fig, ax = plt.subplots(dpi=150, figsize=(self.music_length / 8, 8))
         xaxis = np.arange(self.music_length)
         xticks = np.arange(0, self.music_length, 15)
         cum_total_counts = np.zeros(self.music_length)
@@ -152,10 +152,6 @@ class NoteDistPlotter:
 
         combo_ceil = np.max(cum_total_counts)
         ax.legend(loc="upper left", bbox_to_anchor=(1, 1))
-        if combo_ceil > self.music_length: # you can thank mekko's funny for this
-            fig.set_size_inches(4 * combo_ceil / self.music_length, 8)
-        else:
-            fig.set_size_inches(4 * self.music_length / combo_ceil, 8)
 
         fig.savefig(dest, bbox_inches='tight', pad_inches=0.25)
         plt.close(fig)
