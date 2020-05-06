@@ -4,7 +4,8 @@ import xlsxwriter.worksheet as xws
 
 from .formats import FORMATS
 
-NO_AVG_COLS = ["chart_id", "title", "artist", "illustrator", "charter", "diff"]
+NO_AVG_COLS = ["chart_id", "title", "title_localized",
+               "artist", "illustrator", "charter", "diff"]
 
 class ExcelWriter:
     df: pd.DataFrame
@@ -87,5 +88,6 @@ class ExcelWriter:
 
         key = key.replace("Cdrag", "C-Drag")
         key = key.replace("Per", "per")
+        key = key.replace("Localized", "(Localized)")
 
         return key

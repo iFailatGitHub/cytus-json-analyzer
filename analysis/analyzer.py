@@ -53,6 +53,7 @@ class Analyzer:
             "fc_tp": 100.00,
             "mm_tp": 100.00
         }
+        self.nps_count = 0
 
     def __open_files(self, folder: str, chart_id: str):
         level_json_path = os.path.join(folder, chart_id, "level.json")
@@ -105,7 +106,7 @@ class Analyzer:
         meta = self.level_info.to_dict()
         ret = {
             key: meta[key] for key in 
-            ("title", "artist", "illustrator", "charter")
+            ("title", "title_localized", "artist", "illustrator", "charter")
         }
         ret["length"] = self.music_length
         ret["diff"] = self.chart_info.name
@@ -219,8 +220,18 @@ class Analyzer:
         return scan_line_speeds
 
     def _get_note_counts(self):
+        hold_count = 0
         for note in self.chart.note_list:
             self.note_counts[note.note_type] += 1
+            if note.note_type in NOTE_CATEGORIES["hold"]:
+                start_sec = self._convert_to_sec(note.tick)
+                end_sec = self._convert_to_sec(note.tick + note.hold_tick)
+
+                duration = end_sec - start_sec + 1
+                self.nps_count += duration
+                hold_count += duration
+            else:
+                self.nps_count += 1
 
         self.total_notes = sum(self.note_counts.values())
         self.note_rates = dict()
@@ -231,19 +242,19 @@ class Analyzer:
                 if nt in NOTE_CATEGORIES[category]:
                     self.subtotals[category] += count
 
-            if nt not in NOTE_CATEGORIES["drag_child"]:
+            if nt not in NOTE_CATEGORIES["drag"] or nt is NoteType.cdrag_head:
                 self.avg_taps += count
 
-            self.note_rates[nt] = truncate(count / self.total_notes, 4)
+            self.note_rates[nt] = round(count / self.total_notes, 4)
 
         self.subtotals["total_drag"] = self.subtotals["drag"]
         self.subtotals["drag"] = self.subtotals["total_drag"] - \
             self.subtotals["cdrag"]
 
-        self.subtotal_rates = {st_key: truncate(count / self.total_notes, 4)
+        self.subtotal_rates = {st_key: round(count / self.total_notes, 4)
                                for st_key, count in self.subtotals.items()}
-        self.avg_taps_per_sec = truncate(self.avg_taps / self.music_length, 2)
-        self.notes_per_sec = truncate(self.total_notes / self.music_length, 2)
+        self.avg_taps_per_sec = round(self.avg_taps / self.music_length, 2)
+        self.notes_per_sec = round(self.nps_count / self.music_length, 2)
 
     def _get_min_scores(self):
         goods = 0
@@ -270,3 +281,20 @@ class Analyzer:
 
     def _convert_enum_key(self, obj: Dict[Enum, Any]) -> Dict[str, Any]:
         return {key.name: val for key, val in obj.items()}
+
+    def _convert_to_sec(self, tick: int) -> int:
+        time_base = self.chart.time_base
+        tempos = self.chart.tempo_list
+
+        ms = 0
+        tempo = tempos[0]
+
+        for next_tempo in tempos[1:]:
+            if tick > next_tempo.tick:
+                ms += (next_tempo.tick - tempo.tick) / time_base * tempo.value
+                tempo = next_tempo
+            else:
+                break
+
+        ms += (tick - tempo.tick) / time_base * tempo.value
+        return int(math.floor(ms / 1e6))

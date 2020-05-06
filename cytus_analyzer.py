@@ -161,6 +161,6 @@ if __name__ == "__main__":
     if getattr(sys, 'frozen', False):
         cli(sys.argv[1:])  # pylint: disable=too-many-function-args
     else:
-        org_files(["--force"])
-        analyze([])
-        plot_dist([])
+        org_files(["-d", "charts/rayark"])
+        analyze(["-s", "charts/rayark"])
+        plot_dist(["-s", "charts/rayark"])
