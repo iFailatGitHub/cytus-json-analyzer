@@ -110,14 +110,14 @@ class NoteDistPlotter:
                 break
 
         ms += (tick - tempo.tick) / time_base * tempo.value
-        return int(math.floor(ms / 1e6 + self.chart.start_offset_time))
+        return int(math.floor(ms / 1e6))
 
     def plot_counts(self, dest: str):
         plt.rc("font", size=16)
         plt.rc('xtick', labelsize=12)
         plt.rc('ytick', labelsize=12)
 
-        fig, ax = plt.subplots(dpi=150, figsize=(self.music_length / 8, 8))
+        fig, ax = plt.subplots(dpi=150, figsize=(self.music_length / 10, 8))
         xaxis = np.arange(self.music_length)
         xticks = np.arange(0, self.music_length, 15)
         cum_total_counts = np.zeros(self.music_length)
