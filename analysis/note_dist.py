@@ -18,7 +18,7 @@ from chart import Chart, EventType, LevelInfo, NoteType
 from .dist_format import count_formats
 
 EnumT = TypeVar("EnumT", bound=Enum)
-count_types = ["long_hold", "hold", "tap", "flick", "cdrag", "drag"]
+count_types = ["hold", "tap", "flick", "drag"]
 
 
 def truncate(num: float, decimals: int) -> float:
@@ -77,10 +77,12 @@ class NoteDistPlotter:
         for note in self.chart.note_list:
             is_hold = "hold" in note.note_type.name
 
-            if "cdrag" in note.note_type.name:
-                count_type = "cdrag"
+            if note.note_type is NoteType.cdrag_head:
+                count_type = "tap"
             elif "drag" in note.note_type.name:
                 count_type = "drag"
+            elif "hold" in note.note_type.name:
+                count_type = "hold"
             else:
                 count_type = note.note_type.name
 
@@ -131,16 +133,19 @@ class NoteDistPlotter:
         ax.set_ylabel("No. of Notes")
         ax.set_xticks(xticks)
         ax.set_xticklabels([f"{t//60:02}:{t%60:02}" for t in xticks])
+        ax.grid(axis='y')
+        ax.set_axisbelow(True)
+        ax.set_facecolor("#F0F0F0")
 
         for ct, counts in self.note_counts.items():
             ax.bar(xaxis, counts, bottom=cum_total_counts,
-                   **count_formats[ct])
+                   **count_formats[ct], width=1.0)
             cum_total_counts += counts
 
         avg_note_rate = np.average(cum_total_counts)
         ax.axhline(avg_note_rate, c='black', lw=3)
         note_rate_text = ax.text(0, avg_note_rate + 0.25,
-                                 f"Average Note Rate: {avg_note_rate:0.3}",
+                                 f"Avg. Note Rate: {avg_note_rate:0.3} NPS",
                                  c='w', weight="bold")
         note_rate_text.set_path_effects(
             [path_fx.withStroke(linewidth=3, foreground='black')])
@@ -151,5 +156,6 @@ class NoteDistPlotter:
             fig.set_size_inches(4 * combo_ceil / self.music_length, 8)
         else:
             fig.set_size_inches(4 * self.music_length / combo_ceil, 8)
+
         fig.savefig(dest, bbox_inches='tight', pad_inches=0.25)
         plt.close(fig)
