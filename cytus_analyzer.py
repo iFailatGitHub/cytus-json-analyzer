@@ -22,12 +22,19 @@ def cli():
     pass
 
 
+def is_chart_folder(path: str):
+    if not os.path.isdir(path):
+        return False
+
+    return any([f.name == "level.json" for f in os.scandir(path)])
+
+
 @click.command("org_files")
 @click.option("--src", "-s",
               type=path_type, default=MAIN_FILE_PATH,
               help="Folder containing all songs, charts, meta, etc.")
 @click.option("--dest", "-d",
-              type=path_type, default=CHART_PATH,
+              type=opt_path_type, default=CHART_PATH,
               help="Folder where all files are grouped")
 @click.option("--force", "-f",
               is_flag=True,
@@ -77,8 +84,11 @@ def analyze(chart_ids: List[str] = [], src: str = CHART_PATH, dest: str = defaul
     """
     if len(chart_ids) == 0:
         with os.scandir(src) as dir_items:
-            chart_ids = [chart_id.name for chart_id in dir_items
-                         if chart_id.is_dir()]
+            chart_ids = [cid.name for cid in dir_items
+                         if is_chart_folder(cid.path)]
+
+    if len(chart_ids) == 0:
+        click.echo("No charts in the folder!")
 
     stat_list = dict()
     src = os.path.abspath(src)
@@ -123,8 +133,11 @@ def plot_dist(chart_ids: List[str] = [], src: str = CHART_PATH, dest: str = defa
     """
     if len(chart_ids) == 0:
         with os.scandir(src) as dir_items:
-            chart_ids = [chart_id.name for chart_id in dir_items
-                            if chart_id.is_dir()]
+            chart_ids = [cid.name for cid in dir_items
+                         if is_chart_folder(cid.path)]
+
+    if len(chart_ids) == 0:
+        click.echo("No charts in the folder!")
 
     stat_list = dict()
     src = os.path.abspath(src)
@@ -132,8 +145,8 @@ def plot_dist(chart_ids: List[str] = [], src: str = CHART_PATH, dest: str = defa
     os.makedirs(dest, exist_ok=True)
 
     with click.progressbar(chart_ids,
-                        label=f"Plotting {len(chart_ids)} note dists...",
-                        item_show_func=lambda x: x) as prog_bar:
+                           label=f"Plotting {len(chart_ids)} note dists...",
+                           item_show_func=lambda x: x) as prog_bar:
         for chart_id in prog_bar:
             dist_plotter = NoteDistPlotter(src, chart_id)
             dist_plotter.count_notes()
