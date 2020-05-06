@@ -34,7 +34,7 @@ class ChartInfo:
     def from_dict(obj: Any) -> 'ChartInfo':
         assert isinstance(obj, dict), "Object is not a dict."
         chart_type = from_str(obj.get("type"))
-        name = from_str(obj.get("name"))
+        name = from_str(obj.get("name", chart_type.title()))
         difficulty = from_int(obj.get("difficulty"))
         path = from_str(obj.get("path"))
         music_override = from_union([PathWrapper.from_dict, from_none], 
