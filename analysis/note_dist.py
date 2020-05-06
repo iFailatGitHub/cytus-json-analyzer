@@ -92,7 +92,7 @@ class NoteDistPlotter:
             if note.hold_tick != 0:
                 end_tick = note.tick + note.hold_tick
                 end_sec = self._convert_to_sec(end_tick)
-                for mid_sec in range(sec + 1, end_sec):
+                for mid_sec in range(sec + 1, end_sec + 1):
                     self.note_counts[count_type][mid_sec] += 1
 
     def _convert_to_sec(self, tick: int) -> int:
@@ -145,7 +145,7 @@ class NoteDistPlotter:
         avg_note_rate = np.average(cum_total_counts)
         ax.axhline(avg_note_rate, c='black', lw=3)
         note_rate_text = ax.text(0, avg_note_rate + 0.25,
-                                 f"Avg. Note Rate: {avg_note_rate:0.3} NPS",
+                                 f"Avg. Note Rate: {avg_note_rate:0.2f} NPS",
                                  c='w', weight="bold")
         note_rate_text.set_path_effects(
             [path_fx.withStroke(linewidth=3, foreground='black')])
