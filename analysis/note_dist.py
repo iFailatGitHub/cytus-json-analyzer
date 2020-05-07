@@ -153,7 +153,7 @@ class NoteDistPlotter:
         ax.text(0, avg_note_rate,
                 f"Avg. Note Rate: {avg_note_rate:0.2f} NPS",
                 c='w', weight="bold", va="bottom",
-                path_effects=[path_fx.withStroke(linewidth=3, foreground='black')])
+                path_effects=[path_fx.withStroke(linewidth=3, foreground='k')])
 
         avg_tap_rate = self.tap_counts / self.music_length
         ax.axhline(avg_tap_rate, c='r', lw=3)
