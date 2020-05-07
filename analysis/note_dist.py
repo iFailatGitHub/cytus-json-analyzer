@@ -38,6 +38,7 @@ class NoteDistPlotter:
         self.music_length = math.ceil(music.info.length)
         self.note_counts = {ct: np.zeros(self.music_length)
                             for ct in count_types}
+        self.tap_counts = 0
 
     def __open_files(self, folder: str, chart_id: str):
         level_json_path = os.path.join(folder, chart_id, "level.json")
@@ -79,12 +80,15 @@ class NoteDistPlotter:
 
             if note.note_type is NoteType.cdrag_head:
                 count_type = "tap"
+                self.tap_counts += 1
             elif "drag" in note.note_type.name:
                 count_type = "drag"
             elif "hold" in note.note_type.name:
                 count_type = "hold"
+                self.tap_counts += 1
             else:
                 count_type = note.note_type.name
+                self.tap_counts += 1
 
             sec = self._convert_to_sec(note.tick)
             self.note_counts[count_type][sec] += 1
@@ -143,12 +147,18 @@ class NoteDistPlotter:
             cum_total_counts += counts
 
         avg_note_rate = np.average(cum_total_counts)
-        ax.axhline(avg_note_rate, c='black', lw=3)
-        note_rate_text = ax.text(0, avg_note_rate + 0.25,
-                                 f"Avg. Note Rate: {avg_note_rate:0.2f} NPS",
-                                 c='w', weight="bold")
-        note_rate_text.set_path_effects(
-            [path_fx.withStroke(linewidth=3, foreground='black')])
+        note_rate_line = ax.axhline(avg_note_rate, c='black', lw=3)
+        ax.text(0, avg_note_rate,
+                f"Avg. Note Rate: {avg_note_rate:0.2f} NPS",
+                c='w', weight="bold", va="bottom",
+                path_effects=[path_fx.withStroke(linewidth=3, foreground='black')])
+
+        avg_tap_rate = self.tap_counts / self.music_length
+        ax.axhline(avg_tap_rate, c='r', lw=3)
+        ax.text(0, avg_tap_rate,
+                f"Avg. Tap Rate: {avg_tap_rate:0.2f} TPS",
+                c='w', weight="bold", va="top",
+                path_effects=[path_fx.withStroke(linewidth=3, foreground='r')])
 
         combo_ceil = np.max(cum_total_counts)
         ax.legend(loc="upper left", bbox_to_anchor=(1, 1))
