@@ -149,7 +149,7 @@ class NoteDistPlotter:
             cum_total_counts += counts
 
         avg_note_rate = np.average(cum_total_counts)
-        note_rate_line = ax.axhline(avg_note_rate, c='black', lw=3)
+        note_rate_line = ax.axhline(avg_note_rate, c='k', lw=3)
         ax.text(0, avg_note_rate,
                 f"Avg. Note Rate: {avg_note_rate:0.2f} NPS",
                 c='w', weight="bold", va="bottom",
