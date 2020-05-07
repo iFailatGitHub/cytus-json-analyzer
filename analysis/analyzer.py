@@ -242,7 +242,7 @@ class Analyzer:
                 if nt in NOTE_CATEGORIES[category]:
                     self.subtotals[category] += count
 
-            if nt not in NOTE_CATEGORIES["drag"] or nt is NoteType.cdrag_head:
+            if nt not in NOTE_CATEGORIES["drag_child"]:
                 self.avg_taps += count
 
             self.note_rates[nt] = round(count / self.total_notes, 4)

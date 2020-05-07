@@ -83,6 +83,8 @@ class NoteDistPlotter:
                 self.tap_counts += 1
             elif "drag" in note.note_type.name:
                 count_type = "drag"
+                if "head" in note.note_type.name:
+                    self.tap_counts += 1
             elif "hold" in note.note_type.name:
                 count_type = "hold"
                 self.tap_counts += 1
