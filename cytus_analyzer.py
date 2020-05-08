@@ -30,10 +30,10 @@ def is_chart_folder(path: str):
 
 
 @click.command("org_files")
-@click.option("--src", "-s",
+@click.option("--src", "--in", "-s", "-i",
               type=path_type, default=MAIN_FILE_PATH,
               help="Folder containing all songs, charts, meta, etc.")
-@click.option("--dest", "-d",
+@click.option("--dest", "--out", "-d", "-o",
               type=opt_path_type, default=CHART_PATH,
               help="Folder where all files are grouped")
 @click.option("--force", "-f",
@@ -71,10 +71,10 @@ def org_files(src: str = MAIN_FILE_PATH, dest: str = CHART_PATH, force: bool = F
 
 @click.command("analyze")
 @click.argument("chart_ids", type=click.STRING, nargs=-1)
-@click.option("--src", "-s",
+@click.option("--src", "--in", "-s", "-i",
               type=path_type, default=CHART_PATH,
               help="Folder all levels & charts")
-@click.option("--dest", "-d",
+@click.option("--dest", "--out", "-d", "-o",
               type=file_type, default=default_excel_path,
               help="Folder where all statistics are written")
 def analyze(chart_ids: List[str] = [], src: str = CHART_PATH, dest: str = default_excel_path):
@@ -120,10 +120,10 @@ def analyze(chart_ids: List[str] = [], src: str = CHART_PATH, dest: str = defaul
 
 @click.command("plot_dist")
 @click.argument("chart_ids", type=click.STRING, nargs=-1)
-@click.option("--src", "-s",
+@click.option("--src", "--in", "-s", "-i",
               type=path_type, default=CHART_PATH,
               help="Folder all levels & charts")
-@click.option("--dest", "-d",
+@click.option("--dest", "--out", "-d", "-o",
               type=opt_path_type, default=default_dist_path,
               help="Folder where all note distributions are written")
 def plot_dist(chart_ids: List[str] = [], src: str = CHART_PATH, dest: str = default_dist_path):
