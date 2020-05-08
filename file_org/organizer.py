@@ -174,8 +174,8 @@ class Organizer:
         level_json["illustrator_source"] = "https://www.rayark.com/en/games/cytus2/"
         level_json["charter"] = song_info["song_pack"]
 
-        level_json["music"] = {"path": "music.mp3"}
-        level_json["music_preview"] = {"path": "preview.mp3"}
+        level_json["music"] = {"path": "music.ogg"}
+        level_json["music_preview"] = {"path": "preview.ogg"}
         level_json["background"] = {"path": "background.png"}
         level_json["charts"] = []
 
@@ -194,7 +194,7 @@ class Organizer:
 
             if song_chart_info["music_id"]:
                 chart_info["music_override"] = {
-                    "path": f"music.{diff}.mp3"
+                    "path": f"music.{diff}.ogg"
                 }
 
             level_json["charts"].append(chart_info)
@@ -207,7 +207,7 @@ class Organizer:
             if item == "charts" or item == "overrides":
                 for diff, inner_path in path.items():
                     diff_idx = CYTUS_DIFFS.index(diff)
-                    ext = "txt" if item == "charts" else "mp3"
+                    ext = "txt" if item == "charts" else "ogg"
                     subfolder = item if item == "charts" else "music"
                     orig_fname = f"{old_id}_{diff_idx}.{ext}"
                     orig_path = os.path.join(
@@ -217,5 +217,5 @@ class Organizer:
                 orig_path = os.path.join(self.src, item, f"{old_id}.png")
                 shutil.copy2(orig_path, path)
             elif item == "music" or item == "music_preview":
-                orig_path = os.path.join(self.src, item, f"{old_id}.mp3")
+                orig_path = os.path.join(self.src, item, f"{old_id}.ogg")
                 shutil.copy2(orig_path, path)

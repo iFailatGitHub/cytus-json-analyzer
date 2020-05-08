@@ -10,4 +10,4 @@ directly to the repository since:
 Make sure the file names for the backgrounds, charts, etc. match the chart
 IDs in `song_pack_data.json` and `expansion_pack_data.json`, otherwise they
 will not be organized (e.g. files related to Body Talk [Chart ID:
-`paff001_000`] must be named `paff001_000.png`, `paff001_000.wav`, etc.).
+`paff001_000`] must be named `paff001_000.png`, `paff001_000.ogg`, etc.).
