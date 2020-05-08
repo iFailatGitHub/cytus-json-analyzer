@@ -58,7 +58,7 @@ LOCALIZED_TITLES = {
 	"neko001_035": "Re:VeLATiON ~Twin Wings of Light and Destruction~",
 	"neko001_038": "Hibike!",
 	"neko001_039": "Kirakuna Cloudy",
-	"neko001_040": "Caliburne ~Story of the Legendary Sword~",
+	"neko001_040": "Caliburne ~Story of the Legendary sword~",
 	"neko001_044": "Choujou maimain",
 	"neko002_002": "I can avoid it.#owo",
 	"neko002_004": "One Bite, Two Bites",
